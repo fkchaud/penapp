@@ -9,7 +9,7 @@ export type Table = {
   number: number,
 };
 
-export type Order = {
+export type OrderToPlace = {
   waiter?: string,
   table?: number,
   food?: {

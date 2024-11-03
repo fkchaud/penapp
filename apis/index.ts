@@ -1,4 +1,4 @@
-import {Order} from "@/types";
+import {OrderToPlace} from "@/types";
 
 const baseUrl = 'http://127.0.0.1:8000/'
 
@@ -23,10 +23,16 @@ export const getTables = async () => {
 export const getFoods = async () => {
   const url = baseUrl + 'foods/';
   return await getAny(url);
-}
+};
 
 
-export const placeOrder = async (order: Order) => {
+export const getOrders = async () => {
+  const url = baseUrl + 'orders/';
+  return await getAny(url);
+};
+
+
+export const placeOrder = async (order: OrderToPlace) => {
   const url = baseUrl + 'place_order/';
   try {
     const response = await fetch(url, {method: 'POST', body: JSON.stringify(order), headers: {'Content-Type': 'application/json'}});
@@ -35,4 +41,4 @@ export const placeOrder = async (order: Order) => {
   } catch (error) {
     console.error(error);
   }
-}
+};
