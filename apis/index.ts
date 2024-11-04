@@ -26,8 +26,8 @@ export const getFoods = async () => {
 };
 
 
-export const getOrders = async () => {
-  const url = baseUrl + 'orders/';
+export const getOrders = async (waiter?: string) => {
+  const url = baseUrl + `orders/${waiter ? `waiter=${waiter}` : ''}`;
   return await getAny(url);
 };
 

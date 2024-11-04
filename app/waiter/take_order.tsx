@@ -13,7 +13,7 @@ import {useEffect, useState} from "react";
 
 import {getFoods, getTables, placeOrder} from '@/apis';
 import {Item, OrderToPlace, Table} from "@/types";
-import {theme} from "@/constants/Colors";
+import {Theme} from "@/constants/Colors";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -192,7 +192,7 @@ const TakeOrder = () => {
   };
 
   return (
-    <PaperProvider theme={theme}>
+    <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
           <View>
