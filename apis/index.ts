@@ -1,4 +1,4 @@
-import {OrderToPlace} from "@/types";
+import {OrderToPlace, Waiter} from "@/types";
 
 const baseUrl = 'http://127.0.0.1:8000/'
 
@@ -16,6 +16,12 @@ const getAny = async (url: string) => {
 
 export const getTables = async () => {
   const url = baseUrl + 'tables/'
+  return await getAny(url);
+};
+
+
+export const getWaiters: () => Promise<Waiter[]> = async () => {
+  const url = baseUrl + 'waiters/'
   return await getAny(url);
 };
 

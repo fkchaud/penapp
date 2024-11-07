@@ -43,3 +43,16 @@ export type Order = {
     created_at: string,
   };
 }
+
+export enum UserType {
+  Undefined = "undef",
+  Waiter = "waiter",
+  Cashier = "cashier",
+  Chef = "chef",
+}
+export const UserTypeByKey: {[index: string]: UserType} = {
+  "undef": UserType.Undefined,
+  "waiter": UserType.Waiter,
+  "cashier": UserType.Cashier,
+  "chef": UserType.Chef,
+};

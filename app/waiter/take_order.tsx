@@ -4,16 +4,16 @@ import {
   DataTable,
   Icon,
   IconButton,
-  MD3LightTheme as DefaultTheme,
   PaperProvider,
   TextInput
 } from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 
 import {getFoods, getTables, placeOrder} from '@/apis';
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
+import {WaiterContext, WaiterContextType} from "@/app/_layout";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -80,13 +80,22 @@ const TakeOrder = () => {
     {id: 14, name: "Paso (1l)", price: 400, icon: "bottle-soda-classic"},
   ];
 
+  const {waiter} = useContext(WaiterContext) as WaiterContextType;
+
   const [currentTable, setCurrentTable] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
 
   const [tables, setTables] = useState<Table[]>([]);
-  const [foods, setFoods] = useState<Item[]>([]);
+  const [foods, setFoods] = useState<{[id: number]: Item}>({});
 
-  const [order, setOrder] = useState<OrderToPlace>({});
+  const buildOrder: () => OrderToPlace = () => {
+    return {
+      waiter: waiter,
+      table: currentTable,
+      food: Object.entries(foodToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
+      drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
+    }
+  }
 
   useEffect(() => {
     const retrieveTables = async () => {
@@ -101,102 +110,65 @@ const TakeOrder = () => {
   useEffect(() => {
     const retrieveFoods = async () => {
       const newFoods = await getFoods();
-      setFoods(newFoods);
+      setFoods(newFoods.reduce((acc: {[id: number]: Item}, f: Item) => {
+        acc[f.id] = f;
+        return acc;
+      }, {}));
     };
     retrieveFoods().catch(console.error);
   }, []);
 
-  const recalculatePrice = (newOrder: OrderToPlace) => {
+  const recalculatePrice = (
+    foodToOrder: {[id: number]: number},
+    drinksToOrder: {[id: number]: number}
+  ) => {
     let price = 0;
-    console.log("recalculatePrice", newOrder)
-    price += newOrder.food?.reduce(
-      (partialSum, f) => partialSum + (f.quantity * (foods.find(fo => fo.id === f.id)?.price || 0)),
-      0) || 0;
-    price += newOrder.drinks?.reduce(
-      (partialSum, d) => partialSum + (d.quantity * (drinks.find(dr => dr.id === d.id)?.price || 0)),
-      0) || 0;
+    for (const id in foodToOrder){
+      const food = foods[id];
+      price += food.price * foodToOrder[id];
+    }
+    for (const id in drinksToOrder){
+      const drink = drinks[id];
+      price += drink.price * drinksToOrder[id];
+    }
     setTotalPrice(price);
   };
 
+  const [foodToOrder, setFoodToOrder] = useState<{[id: number]: number}>({})
   const addFoodToOrder = (food: Item, quantity: number) => {
-    console.log("addFoodToOrder", food, quantity, order.food)
-    if (order.food == null) {
-      console.log("order.food == null", order)
-      if (quantity <= 0) return;
-      let newOrder = {...order, food: [{id: food.id, quantity: quantity}]};
-      console.log(newOrder);
-      setOrder(newOrder)
-      recalculatePrice(newOrder);
-      return;
-    }
-
-    const foodIndex = order.food.findIndex(f => f.id === food.id);
-    console.log("foodIndex", foodIndex)
-    if (foodIndex == -1) {
-      if (quantity > 0) {
-        const newOrder = {...order, food: [...order.food, {id: food.id, quantity: quantity}]};
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      }
-    } else {
-      if (quantity > 0) {
-        const newOrder = {
-          ...order, food: order.food.map(
-            f =>
-              f.id === food.id ? {id: food.id, quantity: quantity} : f
-          )
-        };
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      }
-      else {
-        const newOrder = {...order, food: order.food.filter(f => f.id !== food.id)};
-        console.log("qty <= 0", quantity, "new order", newOrder);
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      }
-    }
+    if (quantity > 0)
+      setFoodToOrder({...foodToOrder, [food.id]: quantity});
+    else
+      setFoodToOrder(prevFoodToOrder => {
+        const { [food.id]: _, ...newFoodToOrder } = prevFoodToOrder;
+        return newFoodToOrder;
+      });
   };
+  const [drinksToOrder, setDrinksToOrder] = useState<{[id: number]: number}>({})
   const addDrinkToOrder = (drink: Item, quantity: number) => {
-    if (order.drinks == null) {
-      if (quantity <= 0) return;
-      const newOrder = {...order, drinks: [{id: drink.id, quantity: quantity}]};
-      setOrder(newOrder)
-      recalculatePrice(newOrder);
-      return;
-    }
-
-    const drinkIndex = order.drinks.findIndex(d => d.id === drink.id);
-    if (drinkIndex > -1) {
-      if (quantity > 0) {
-        const newOrder = {...order, drinks: [...order.drinks, {id: drink.id, quantity: quantity}]};
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      }
-    } else {
-      if (quantity > 0) {
-        const newOrder = {
-          ...order, drinks: order.drinks.map(
-            d =>
-              d.id === drink.id ? {id: drink.id, quantity: quantity} : d
-          )
-        };
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      } else {
-        const newOrder = {...order, drinks: order.drinks.filter(d => d.id === drink.id)};
-        setOrder(newOrder);
-        recalculatePrice(newOrder);
-      }
-    }
+    if (quantity > 0)
+      setDrinksToOrder({...drinksToOrder, [drink.id]: quantity});
+    else
+      setDrinksToOrder(prevDrinkToOrder => {
+        const { [drink.id]: _, ...newDrinksToOrder } = prevDrinkToOrder;
+        return newDrinksToOrder;
+      });
   };
+  useEffect(() => {
+    recalculatePrice(foodToOrder, drinksToOrder);
+  }, [foodToOrder, drinksToOrder]);
 
   return (
     <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
           <View>
-            <TextInput label="Mozo" mode="outlined" onChangeText={(text) => setOrder({...order, waiter: text})} />
+            <TextInput
+              editable={false}
+              label="Mozo"
+              mode="outlined"
+              value={waiter}
+            />
           </View>
           <View>
             <Text>Mesa</Text>
@@ -214,7 +186,6 @@ const TakeOrder = () => {
                   }}
                   onPress={() => {
                     setCurrentTable(item.number);
-                    setOrder({...order, table: item.number})
                   }}
                 >
                   <Icon source={"table-picnic"} size={20}/>
@@ -227,7 +198,7 @@ const TakeOrder = () => {
           <Text>Comida</Text>
           <ScrollView style={{height: 200}}>
             <DataTable>
-              {foods?.map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
+              {Object.values(foods)?.map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
             </DataTable>
           </ScrollView>
 
@@ -243,7 +214,7 @@ const TakeOrder = () => {
             <Text>${totalPrice}</Text>
           </View>
           <Button mode={"contained"} onPress={() => {
-            placeOrder(order).then(
+            placeOrder(buildOrder()).then(
               () => Alert.alert("Comanda enviada", "Se envió tu comanda c:")
             ).catch(console.error);
           }}>
