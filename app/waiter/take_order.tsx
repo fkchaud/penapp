@@ -82,16 +82,17 @@ const TakeOrder = () => {
 
   const {waiter} = useContext(WaiterContext) as WaiterContextType;
 
-  const [currentTable, setCurrentTable] = useState(1);
+  const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
 
   const [tables, setTables] = useState<Table[]>([]);
   const [foods, setFoods] = useState<{[id: number]: Item}>({});
+  const [drinks, setDrinks] = useState<{[id: number]: Item}>({});
 
   const buildOrder: () => OrderToPlace = () => {
     return {
       waiter: waiter,
-      table: currentTable,
+      table: currentTable?.number,
       food: Object.entries(foodToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
       drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
     }
@@ -99,7 +100,8 @@ const TakeOrder = () => {
 
   useEffect(() => {
     const retrieveTables = async () => {
-      const newTables = await getTables();
+      let newTables = await getTables();
+      newTables = newTables.map((table: Table) => ({number: table.number}));
       setTables(newTables);
       if (newTables && newTables.length > 0)
         setCurrentTable(newTables[0]);
@@ -187,14 +189,14 @@ const TakeOrder = () => {
               renderItem={({item}) => (
                 <TouchableOpacity
                   style={{
-                    backgroundColor: (currentTable == item.number) ? "red" : "grey",
+                    backgroundColor: (currentTable?.number == item.number) ? "red" : "grey",
                     margin: 1,
                     width: 40,
                     height: 40,
                     alignItems: "center",
                   }}
                   onPress={() => {
-                    setCurrentTable(item.number);
+                    setCurrentTable(item);
                   }}
                 >
                   <Icon source={"table-picnic"} size={20}/>
