@@ -6,13 +6,14 @@ import {ScrollView, Text} from "react-native";
 import {StatusLabel} from "@/components/order_card";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
-import {getOrder, updateOrderStatus} from "@/apis";
 import {useIsFocused} from "@react-navigation/core";
+import {useApi} from "@/hooks/useApi";
 
 
 const OrderView = () => {
   const { id }: {id: string} = useLocalSearchParams();
   const isFocused = useIsFocused();
+  const {getOrder, updateOrderStatus} = useApi();
 
   const [order, setOrder] = useState<Order | null>(null);
 

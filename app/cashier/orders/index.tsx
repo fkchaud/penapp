@@ -3,16 +3,17 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {ActivityIndicator, Checkbox, PaperProvider} from "react-native-paper";
 import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
-import {Order, OrderStatus} from "@/types";
-import {getOrders, GetOrdersParams} from "@/apis";
+import {Order} from "@/types";
 import {FlatGrid} from "react-native-super-grid";
 import {OrderCard} from "@/components/order_card";
 import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
+import {GetOrdersParams, useApi} from "@/hooks/useApi";
 
 
 const Orders = () => {
   const isFocused = useIsFocused();
+  const {getOrders} = useApi();
 
   const [time, setTime] = useState(Date.now());
 

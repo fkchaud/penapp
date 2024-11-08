@@ -6,16 +6,17 @@ import {FlatGrid} from "react-native-super-grid";
 
 import {Theme} from "@/constants/Colors";
 import {Order} from "@/types";
-import {getOrders} from "@/apis";
 import {OrderCard} from "@/components/order_card";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
 import {Link, router} from "expo-router";
+import {useApi} from "@/hooks/useApi";
 
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const isFocused = useIsFocused();
+  const {getOrders} = useApi();
 
   const [time, setTime] = useState(Date.now());
 

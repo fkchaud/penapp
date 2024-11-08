@@ -1,12 +1,19 @@
 import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {SegmentedButtons} from "react-native-paper";
+import {SegmentedButtons, TextInput} from "react-native-paper";
 import {useContext, useEffect, useState} from "react";
 import {UserType, UserTypeByKey, Waiter} from "@/types";
-import {UserTypeContext, UserTypeContextType, WaiterContext, WaiterContextType} from "@/app/_layout";
-import {getWaiters} from "@/apis";
+import {
+  ServiceUrlContext,
+  ServiceUrlContextType,
+  UserTypeContext,
+  UserTypeContextType,
+  WaiterContext,
+  WaiterContextType
+} from "@/app/_layout";
 import {SelectList} from "react-native-dropdown-select-list";
 import {useIsFocused} from "@react-navigation/core";
+import {useApi} from "@/hooks/useApi";
 
 
 const UserTypeSelector = () => {
@@ -38,7 +45,9 @@ const UserTypeSelector = () => {
 const Index = () => {
   const {userType} = useContext(UserTypeContext) as UserTypeContextType;
   const {waiter, setWaiter} = useContext(WaiterContext) as WaiterContextType;
+  const {serviceUrl, setServiceUrl} = useContext(ServiceUrlContext) as ServiceUrlContextType;
   const isFocused = useIsFocused();
+  const {getWaiters} = useApi();
 
   const [waiters, setWaiters] = useState<Waiter[]>([]);
 
@@ -55,6 +64,12 @@ const Index = () => {
       <ScrollView>
         <View>
           <Text>PeñApp</Text>
+          <TextInput
+            label='Url del servidor:'
+            value={serviceUrl}
+            mode='outlined'
+            onChangeText={(text) => setServiceUrl(text)}
+          />
           <UserTypeSelector />
           {userType == UserType.Waiter && (
             <SelectList

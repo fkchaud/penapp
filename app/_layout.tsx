@@ -36,6 +36,21 @@ const UserTypeProvider = ({ children }: {children: React.ReactNode})=> {
   )
 };
 
+export type ServiceUrlContextType = {
+  serviceUrl: string,
+  setServiceUrl: React.Dispatch<React.SetStateAction<string>>,
+}
+export const ServiceUrlContext = createContext<ServiceUrlContextType | null>(null);
+const ServiceUrlProvider = ({children }: {children: React.ReactNode})=> {
+  const [serviceUrl, setServiceUrl] = useState<string>('http://127.0.0.1:8000/');
+
+  return (
+    <ServiceUrlContext.Provider value={{serviceUrl, setServiceUrl}}>
+      {children}
+    </ServiceUrlContext.Provider>
+  )
+}
+
 
 const MyDrawer = () => {
   const {userType} = useContext(UserTypeContext) as UserTypeContextType;
@@ -94,11 +109,13 @@ export default function RootLayout() {
   return (
     <WaiterProvider>
       <UserTypeProvider>
-        <PaperProvider theme={Theme}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <MyDrawer />
-          </GestureHandlerRootView>
-        </PaperProvider>
+        <ServiceUrlProvider>
+          <PaperProvider theme={Theme}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <MyDrawer />
+            </GestureHandlerRootView>
+          </PaperProvider>
+        </ServiceUrlProvider>
       </UserTypeProvider>
     </WaiterProvider>
   );

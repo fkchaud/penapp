@@ -10,12 +10,12 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useContext, useEffect, useState} from "react";
 
-import {getDrinks, getFoods, getTables, placeOrder} from '@/apis';
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
 import {router} from "expo-router";
+import {useApi} from "@/hooks/useApi";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -84,6 +84,7 @@ const TakeOrder = () => {
 
   const {waiter} = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
+  const {getDrinks, getFoods, getTables, placeOrder} = useApi();
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
