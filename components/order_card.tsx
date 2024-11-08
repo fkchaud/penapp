@@ -10,6 +10,7 @@ export const StatusLabel = ({status}: { status: OrderStatus }) => {
     'REJECTED': {text: 'Rechazado', color: 'red'},
     'PREPARED': {text: 'Preparado', color: 'green'},
     'DELIVERED': {text: 'Entregado', color: 'white'},
+    'CANCELED': {text: 'Cancelado', color: 'cyan'},
   }
 
   return (
