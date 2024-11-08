@@ -15,6 +15,7 @@ import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
+import {router} from "expo-router";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -229,7 +230,7 @@ const TakeOrder = () => {
           <Button mode={"contained"} onPress={() => {
             placeOrder(buildOrder()).then(
               () => Alert.alert("Comanda enviada", "Se envió tu comanda c:")
-            ).catch(console.error);
+            ).catch(console.error).then(() => router.navigate('/waiter/orders'));
           }}>
             Confirmar comanda
           </Button>
