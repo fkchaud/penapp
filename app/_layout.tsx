@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useState} from "react";
 import {Drawer} from "expo-router/drawer";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
-import {PaperProvider,} from 'react-native-paper';
+import {PaperProvider, Portal, Snackbar,} from 'react-native-paper';
 import {Theme} from "@/constants/Colors";
 import {UserType} from "@/types";
 
@@ -105,16 +105,57 @@ const MyDrawer = () => {
 }
 
 
+export type AlertContextType = {
+  alertMessage: string,
+  setAlertMessage: React.Dispatch<React.SetStateAction<string>>,
+  onDismiss: (() => any) | null,
+  setOnDismiss: React.Dispatch<React.SetStateAction<(() => any) | null>>,
+}
+export const AlertContext = createContext({});
+const AlertProvider = ({ children }: {children: React.ReactNode})=> {
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [onDismiss, setOnDismiss] = useState<(() => any) | null>(null);
+
+  return (
+    <AlertContext.Provider value={{alertMessage, setAlertMessage, onDismiss, setOnDismiss}}>
+      {children}
+    </AlertContext.Provider>
+  );
+};
+
+const MyPortal = () => {
+  const {alertMessage, setAlertMessage, onDismiss, setOnDismiss} = useContext(AlertContext) as AlertContextType;
+
+  return (
+    <Portal>
+      <Snackbar
+        visible={!!alertMessage}
+        onDismiss={() => {
+          setAlertMessage('');
+          setOnDismiss(null);
+          onDismiss && onDismiss();
+        }}
+      >
+        {alertMessage}
+      </Snackbar>
+    </Portal>
+  )
+}
+
+
 export default function RootLayout() {
   return (
     <WaiterProvider>
       <UserTypeProvider>
         <ServiceUrlProvider>
-          <PaperProvider theme={Theme}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <MyDrawer />
-            </GestureHandlerRootView>
-          </PaperProvider>
+          <AlertProvider>
+            <PaperProvider theme={Theme}>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <MyDrawer />
+                <MyPortal />
+              </GestureHandlerRootView>
+            </PaperProvider>
+          </AlertProvider>
         </ServiceUrlProvider>
       </UserTypeProvider>
     </WaiterProvider>

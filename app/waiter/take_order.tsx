@@ -4,7 +4,7 @@ import {
   DataTable,
   Icon,
   IconButton,
-  PaperProvider,
+  PaperProvider, Portal, Snackbar,
   TextInput
 } from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ import {useContext, useEffect, useState} from "react";
 
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
-import {WaiterContext, WaiterContextType} from "@/app/_layout";
+import {AlertContext, AlertContextType, WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
 import {router} from "expo-router";
 import {useApi} from "@/hooks/useApi";
@@ -85,8 +85,12 @@ const TakeOrder = () => {
   ];
 
   const {waiter} = useContext(WaiterContext) as WaiterContextType;
+  const {setAlertMessage, setOnDismiss} = useContext(AlertContext) as AlertContextType;
   const isFocused = useIsFocused();
   const {getDrinks, getFoods, getTables, placeOrder} = useApi();
+
+  const [snackbarSuccessVisible, setSnackbarSuccessVisible] = useState(false);
+  const [snackbarFailVisible, setSnackbarFailVisible] = useState(false);
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -231,9 +235,18 @@ const TakeOrder = () => {
             <Text>${totalPrice}</Text>
           </View>
           <Button mode={"contained"} onPress={() => {
-            placeOrder(buildOrder()).then(
-              () => Alert.alert("Comanda enviada", "Se envió tu comanda c:")
-            ).catch(console.error).then(() => router.navigate('/waiter/orders'));
+            placeOrder(buildOrder())
+              .then(
+                () => {
+                  setOnDismiss(() => router.navigate('/waiter/orders'));
+                  setAlertMessage('Comanda enviada');
+                }
+              )
+              .catch((e) => {
+                console.error(e);
+                setOnDismiss(null);
+                setAlertMessage('Error: ' + e)
+              });
           }}>
             Confirmar comanda
           </Button>

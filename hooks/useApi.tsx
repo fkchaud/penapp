@@ -79,6 +79,7 @@ export const useApi = () => {
       return json.results;
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 
