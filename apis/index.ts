@@ -32,6 +32,12 @@ export const getFoods = async () => {
 };
 
 
+export const getDrinks = async () => {
+  const url = baseUrl + 'drinks/';
+  return await getAny(url);
+};
+
+
 export const getOrders = async (waiter?: string) => {
   const url = baseUrl + `orders/${waiter ? `waiter=${waiter}` : ''}`;
   return await getAny(url);

@@ -10,7 +10,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useContext, useEffect, useState} from "react";
 
-import {getFoods, getTables, placeOrder} from '@/apis';
+import {getDrinks, getFoods, getTables, placeOrder} from '@/apis';
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
@@ -49,7 +49,7 @@ const BuyableItem = ({item, addItemToOrder}: {
 
 
 const TakeOrder = () => {
-  const food: Item[] = [
+  const def_food: Item[] = [
     {id: 1, name: "Carne a la Olla", price: 1100, icon: "pot-mix"},
     {id: 2, name: "Pollo al disco", price: 1000, icon: "bowl-mix"},
     {id: 3, name: "Hamburguesa", price: 900, icon: "hamburger"},
@@ -63,7 +63,7 @@ const TakeOrder = () => {
     {id: 11, name: "Pastelitos (media docena)", price: 500, icon: "food-croissant"},
   ];
 
-  const drinks: Item[] = [
+  const def_drinks: Item[] = [
     {id: 1, name: "Agua (500ml)", price: 200, icon: "bottle-soda"},
     {id: 2, name: "Saborizada (1l)", price: 300, icon: "bottle-soda"},
     {id: 3, name: "Cerbeza rubia (1l)", price: 500, icon: "glass-mug-variant"},
@@ -115,7 +115,16 @@ const TakeOrder = () => {
         return acc;
       }, {}));
     };
+    const retrieveDrinks = async () => {
+      const newDrinks = await getDrinks();
+      setDrinks(newDrinks.reduce((acc: {[id: number]: Item}, d: Item) => {
+        acc[d.id] = d;
+        return acc;
+      }, {}));
+    };
     retrieveFoods().catch(console.error);
+    retrieveDrinks().catch(console.error);
+
   }, []);
 
   const recalculatePrice = (
@@ -198,14 +207,14 @@ const TakeOrder = () => {
           <Text>Comida</Text>
           <ScrollView style={{height: 200}}>
             <DataTable>
-              {Object.values(foods)?.map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
+              {Object.values(foods).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
             </DataTable>
           </ScrollView>
 
           <Text>Bebida</Text>
           <ScrollView style={{height: 200}}>
             <DataTable>
-              {drinks?.map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addDrinkToOrder} /></DataTable.Row>))}
+              {Object.values(drinks).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addDrinkToOrder} /></DataTable.Row>))}
             </DataTable>
           </ScrollView>
 
