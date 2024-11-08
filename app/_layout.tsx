@@ -60,40 +60,40 @@ const MyDrawer = () => {
       <Drawer.Screen
         name={'index'}
         options={{
-          drawerLabel: "dice label index",
-          title: "dice title index",
+          drawerLabel: "Inicio",
+          title: "PeñApp",
         }}
       />
       <Drawer.Screen
         name={'cashier/orders/index'}
         options={{
-          drawerLabel: "dice label cashier orders",
-          title: "dice title cashier orders",
+          drawerLabel: "Ver pedidos",
+          title: "Pedidos",
           drawerItemStyle: {display: userType == UserType.Cashier ? 'flex' : 'none'}
         }}
       />
       <Drawer.Screen
         name={'chef/orders/index'}
         options={{
-          drawerLabel: "dice label chef",
-          title: "dice title chef",
-          drawerItemStyle: {display: userType == UserType.Chef ? 'flex' : 'none'}
+          drawerLabel: "Ver pedidos",
+          title: "Pedidos",
+          drawerItemStyle: {display: userType == UserType.Chef ? 'flex' : 'none'},
         }}
       />
       <Drawer.Screen
         name={'waiter/orders/index'}
         options={{
-          drawerLabel: "dice label waiter",
-          title: "dice title waiter",
-          drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'}
+          drawerLabel: "Ver pedidos",
+          title: "Pedidos",
+          drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'},
         }}
       />
       <Drawer.Screen
           name={'waiter/take_order'}
           options={{
-            drawerLabel: "dice label tomar pedido",
-            title: "dice title tomar pedido",
-            drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'}
+            drawerLabel: "Tomar pedido",
+            title: "Tomar pedido",
+            drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'},
           }}
       />
       <Drawer.Screen name={'waiter/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
@@ -120,28 +120,3 @@ export default function RootLayout() {
     </WaiterProvider>
   );
 };
-
-/*
-export default function Layout() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Drawer>
-        <Drawer.Screen
-          name="index" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: 'Home',
-            title: 'overview',
-          }}
-        />
-        <Drawer.Screen
-          name="user/[id]" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: 'User',
-            title: 'overview',
-          }}
-        />
-      </Drawer>
-    </GestureHandlerRootView>
-  );
-}
- */
