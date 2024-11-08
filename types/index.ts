@@ -33,10 +33,16 @@ type OrderedFood = {
   quantity: number,
 };
 
+type OrderedDrinks = {
+  drink: Item,
+  quantity: number,
+};
+
 export type Order = {
   id: number,
   waiter: Waiter,
   foods: OrderedFood[];
+  drinks: OrderedDrinks[];
   table: Table,
   last_status: {
     status: OrderStatus,

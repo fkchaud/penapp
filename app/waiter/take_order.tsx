@@ -14,6 +14,7 @@ import {getDrinks, getFoods, getTables, placeOrder} from '@/apis';
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
+import {useIsFocused} from "@react-navigation/core";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -81,6 +82,7 @@ const TakeOrder = () => {
   ];
 
   const {waiter} = useContext(WaiterContext) as WaiterContextType;
+  const isFocused = useIsFocused();
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -107,7 +109,7 @@ const TakeOrder = () => {
         setCurrentTable(newTables[0]);
     };
     retrieveTables().catch(console.error);
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     const retrieveFoods = async () => {
@@ -127,7 +129,7 @@ const TakeOrder = () => {
     retrieveFoods().catch(console.error);
     retrieveDrinks().catch(console.error);
 
-  }, []);
+  }, [isFocused]);
 
   const recalculatePrice = (
     foodToOrder: {[id: number]: number},

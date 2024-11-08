@@ -6,6 +6,7 @@ import {UserType, UserTypeByKey, Waiter} from "@/types";
 import {UserTypeContext, UserTypeContextType, WaiterContext, WaiterContextType} from "@/app/_layout";
 import {getWaiters} from "@/apis";
 import {SelectList} from "react-native-dropdown-select-list";
+import {useIsFocused} from "@react-navigation/core";
 
 
 const UserTypeSelector = () => {
@@ -37,6 +38,8 @@ const UserTypeSelector = () => {
 const Index = () => {
   const {userType} = useContext(UserTypeContext) as UserTypeContextType;
   const {waiter, setWaiter} = useContext(WaiterContext) as WaiterContextType;
+  const isFocused = useIsFocused();
+
   const [waiters, setWaiters] = useState<Waiter[]>([]);
 
   useEffect(() => {
@@ -45,7 +48,7 @@ const Index = () => {
       setWaiters(waiters);
     };
     call().catch(console.error);
-  }, [userType])
+  }, [userType, isFocused])
 
   return (
     <SafeAreaView>

@@ -3,7 +3,7 @@ import {Chip} from "react-native-paper";
 import {Text, View} from "react-native";
 import {Theme} from "@/constants/Colors";
 
-const StatusLabel = ({status}: { status: OrderStatus }) => {
+export const StatusLabel = ({status}: { status: OrderStatus }) => {
   const conversion = {
     'PLACED': {text: 'Tomado', color: 'gray'},
     'ACCEPTED': {text: 'Aprobado', color: 'yellow'},
@@ -24,7 +24,8 @@ const StatusLabel = ({status}: { status: OrderStatus }) => {
 export const OrderCard = ({order}: { order: Order }) => {
   return (
     <View style={{
-      flexGrow: 1,
+      height: "100%",
+      width: "100%",
       backgroundColor: Theme.colors.background,
       borderStyle: 'dashed',
       borderWidth: 1,
@@ -32,11 +33,14 @@ export const OrderCard = ({order}: { order: Order }) => {
       paddingHorizontal: 8,
     }}>
       <Text>Comanda #{order.id}</Text>
+      <Text>Mozo {order.waiter.name}</Text>
       <Text>Mesa {order.table.number}</Text>
       {order.foods.map(food => (
         <Text key={food.food.id}>- {food.quantity}x {food.food.name}</Text>
       ))}
-      {/* TODO: add drinks */}
+      {order.drinks.map(drinks => (
+        <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
+      ))}
       {order.last_status && <StatusLabel status={order.last_status.status}/>}
     </View>
   )
