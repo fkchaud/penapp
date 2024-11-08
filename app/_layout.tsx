@@ -1,4 +1,4 @@
-import React, {createContext, useState} from "react";
+import React, {createContext, useContext, useState} from "react";
 import {Drawer} from "expo-router/drawer";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {PaperProvider,} from 'react-native-paper';
@@ -37,13 +37,66 @@ const UserTypeProvider = ({ children }: {children: React.ReactNode})=> {
 };
 
 
+const MyDrawer = () => {
+  const {userType} = useContext(UserTypeContext) as UserTypeContextType;
+
+  return (
+    <Drawer>
+      <Drawer.Screen
+        name={'index'}
+        options={{
+          drawerLabel: "dice label index",
+          title: "dice title index",
+        }}
+      />
+      <Drawer.Screen
+        name={'cashier/orders/index'}
+        options={{
+          drawerLabel: "dice label cashier orders",
+          title: "dice title cashier orders",
+          drawerItemStyle: {display: userType == UserType.Cashier ? 'flex' : 'none'}
+        }}
+      />
+      <Drawer.Screen
+        name={'chef/orders/index'}
+        options={{
+          drawerLabel: "dice label chef",
+          title: "dice title chef",
+          drawerItemStyle: {display: userType == UserType.Chef ? 'flex' : 'none'}
+        }}
+      />
+      <Drawer.Screen
+        name={'waiter/orders/index'}
+        options={{
+          drawerLabel: "dice label waiter",
+          title: "dice title waiter",
+          drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'}
+        }}
+      />
+      <Drawer.Screen
+          name={'waiter/take_order'}
+          options={{
+            drawerLabel: "dice label tomar pedido",
+            title: "dice title tomar pedido",
+            drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'}
+          }}
+      />
+      <Drawer.Screen name={'waiter/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
+      <Drawer.Screen name={'cashier/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
+      <Drawer.Screen name={'chef/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
+    </Drawer>
+
+  )
+}
+
+
 export default function RootLayout() {
   return (
     <WaiterProvider>
       <UserTypeProvider>
         <PaperProvider theme={Theme}>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <Drawer />
+            <MyDrawer />
           </GestureHandlerRootView>
         </PaperProvider>
       </UserTypeProvider>
