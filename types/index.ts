@@ -9,6 +9,7 @@ export type Item = {
   name: string,
   icon: string,
   price: number,
+  remaining: number,
 };
 
 export type Table = {

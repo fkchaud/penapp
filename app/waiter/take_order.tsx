@@ -29,6 +29,8 @@ const BuyableItem = ({item, addItemToOrder}: {
       <DataTable.Cell style={{overflow: "scroll"}}>
         <Icon size={20} source={item.icon || "blank"}/>
         {item.name}
+        <br/>
+        Quedan {item.remaining}
       </DataTable.Cell>
       <DataTable.Cell numeric style={{maxWidth: 50}}>${item.price}</DataTable.Cell>
       <DataTable.Cell style={{maxWidth: 90}}>
@@ -52,34 +54,34 @@ const BuyableItem = ({item, addItemToOrder}: {
 
 const TakeOrder = () => {
   const def_food: Item[] = [
-    {id: 1, name: "Carne a la Olla", price: 1100, icon: "pot-mix"},
-    {id: 2, name: "Pollo al disco", price: 1000, icon: "bowl-mix"},
-    {id: 3, name: "Hamburguesa", price: 900, icon: "hamburger"},
-    {id: 4, name: "Choripán", price: 700, icon: "sausage"},
-    {id: 5, name: "Sándwich de Pernil (x2 u)", price: 600, icon: "baguette"},
-    {id: 6, name: "Sándwich de Bondiola", price: 900, icon: "baguette"},
-    {id: 7, name: "Papas Fritas", price: 400, icon: "french-fries"},
-    {id: 8, name: "Empanadas (docena)", price: 900, icon: "food-croissant"},
-    {id: 9, name: "Empanadas (media docena)", price: 500, icon: "food-croissant"},
-    {id: 10, name: "Pastelitos (docena)", price: 900, icon: "food-croissant"},
-    {id: 11, name: "Pastelitos (media docena)", price: 500, icon: "food-croissant"},
+    {id: 1, name: "Carne a la Olla", price: 1100, icon: "pot-mix", remaining: 10},
+    {id: 2, name: "Pollo al disco", price: 1000, icon: "bowl-mix", remaining: 10},
+    {id: 3, name: "Hamburguesa", price: 900, icon: "hamburger", remaining: 10},
+    {id: 4, name: "Choripán", price: 700, icon: "sausage", remaining: 10},
+    {id: 5, name: "Sándwich de Pernil (x2 u)", price: 600, icon: "baguette", remaining: 10},
+    {id: 6, name: "Sándwich de Bondiola", price: 900, icon: "baguette", remaining: 10},
+    {id: 7, name: "Papas Fritas", price: 400, icon: "french-fries", remaining: 10},
+    {id: 8, name: "Empanadas (docena)", price: 900, icon: "food-croissant", remaining: 10},
+    {id: 9, name: "Empanadas (media docena)", price: 500, icon: "food-croissant", remaining: 10},
+    {id: 10, name: "Pastelitos (docena)", price: 900, icon: "food-croissant", remaining: 10},
+    {id: 11, name: "Pastelitos (media docena)", price: 500, icon: "food-croissant", remaining: 10},
   ];
 
   const def_drinks: Item[] = [
-    {id: 1, name: "Agua (500ml)", price: 200, icon: "bottle-soda"},
-    {id: 2, name: "Saborizada (1l)", price: 300, icon: "bottle-soda"},
-    {id: 3, name: "Cerbeza rubia (1l)", price: 500, icon: "glass-mug-variant"},
-    {id: 4, name: "Cerbeza roja (1l)", price: 500, icon: "glass-mug-variant"},
-    {id: 5, name: "Cerbeza negra (1l)", price: 500, icon: "glass-mug-variant"},
-    {id: 6, name: "Cerbeza rubia (lata)", price: 300, icon: "glass-mug-variant"},
-    {id: 7, name: "Cerbeza roja (lata)", price: 300, icon: "glass-mug-variant"},
-    {id: 8, name: "Cerbeza negra (lata)", price: 300, icon: "glass-mug-variant"},
-    {id: 9, name: "Vino (1l)", price: 400, icon: "bottle-wine"},
-    {id: 10, name: "Soda", price: 200, icon: "bottle-soda"},
-    {id: 11, name: "Coca (1l)", price: 400, icon: "bottle-soda-classic"},
-    {id: 12, name: "Sprite (1l)", price: 400, icon: "bottle-soda-classic"},
-    {id: 13, name: "Fanta (1l)", price: 400, icon: "bottle-soda-classic"},
-    {id: 14, name: "Paso (1l)", price: 400, icon: "bottle-soda-classic"},
+    {id: 1, name: "Agua (500ml)", price: 200, icon: "bottle-soda", remaining: 10},
+    {id: 2, name: "Saborizada (1l)", price: 300, icon: "bottle-soda", remaining: 10},
+    {id: 3, name: "Cerbeza rubia (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
+    {id: 4, name: "Cerbeza roja (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
+    {id: 5, name: "Cerbeza negra (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
+    {id: 6, name: "Cerbeza rubia (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
+    {id: 7, name: "Cerbeza roja (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
+    {id: 8, name: "Cerbeza negra (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
+    {id: 9, name: "Vino (1l)", price: 400, icon: "bottle-wine", remaining: 10},
+    {id: 10, name: "Soda", price: 200, icon: "bottle-soda", remaining: 10},
+    {id: 11, name: "Coca (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
+    {id: 12, name: "Sprite (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
+    {id: 13, name: "Fanta (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
+    {id: 14, name: "Paso (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
   ];
 
   const {waiter} = useContext(WaiterContext) as WaiterContextType;
