@@ -1,10 +1,10 @@
 import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {ActivityIndicator, PaperProvider} from "react-native-paper";
+import {ActivityIndicator, Checkbox, PaperProvider} from "react-native-paper";
 import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
-import {Order} from "@/types";
-import {getOrders} from "@/apis";
+import {Order, OrderStatus} from "@/types";
+import {getOrders, GetOrdersParams} from "@/apis";
 import {FlatGrid} from "react-native-super-grid";
 import {OrderCard} from "@/components/order_card";
 import {Link} from "expo-router";
@@ -23,16 +23,22 @@ const Orders = () => {
     };
   }, [isFocused]);
 
+  const [showAllOrders, setShowAllOrders] = useState<boolean>(false)
+
   const [orders, setOrders] = useState<Order[] | null>(null);
 
   useEffect(() => {
     const retrieve = async () => {
-      const newOrders = await getOrders();
+      const params: GetOrdersParams = {};
+      if (!showAllOrders)
+        params.status = 'PLACED';
+      const newOrders = await getOrders(params);
       setOrders(newOrders || []);
     };
     retrieve()
       .catch(console.error);
-  }, [isFocused, time])
+  }, [isFocused, time, showAllOrders])
+
 
   if (!orders) {
     return <ActivityIndicator size='large'/>;
@@ -43,6 +49,10 @@ const Orders = () => {
       <SafeAreaView>
         <ScrollView>
           <Text>Pedidos</Text>
+          <View style={{flexDirection: 'row'}}>
+            <Checkbox status={showAllOrders ? 'checked' : 'unchecked'} onPress={() => setShowAllOrders(!showAllOrders)}/>
+            <Text>Mostrar todas las ordenes</Text>
+          </View>
           <View>
             <FlatGrid
               itemDimension={140}

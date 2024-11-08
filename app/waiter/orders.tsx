@@ -29,7 +29,7 @@ const Orders = () => {
 
   useEffect(() => {
     const retrieve = async () => {
-      const newOrders = await getOrders(waiter);
+      const newOrders = await getOrders({waiter});
       setOrders(newOrders || []);
     };
     retrieve()

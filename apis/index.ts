@@ -39,8 +39,19 @@ export const getDrinks = async () => {
 };
 
 
-export const getOrders = async (waiter?: string): Promise<Order[]> => {
-  const url = baseUrl + `orders/${waiter ? `?waiter=${waiter}` : ''}`;
+export interface GetOrdersParams {
+  waiter?: string;
+  status?: OrderStatus;
+}
+export const getOrders = async ({waiter, status}: GetOrdersParams = {}) => {
+  let url = baseUrl + 'orders/';
+  if (waiter || status){
+    url += '?'
+    if (waiter)
+      url += `waiter=${waiter}`;
+    if (status)
+      url += `status=${status}`;
+  }
   return await getAny(url);
 };
 
