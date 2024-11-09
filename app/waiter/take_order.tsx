@@ -12,7 +12,7 @@ import {
 import {useContext, useEffect, useState} from "react";
 import { RadioButton, Text } from 'react-native-paper';
 
-import {Item, OrderToPlace, Table} from "@/types";
+import {Item, OrderToPlace, PaymentType, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {AlertContext, AlertContextType, WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
@@ -98,11 +98,16 @@ const TakeOrder = () => {
   const [drinks, setDrinks] = useState<{[id: number]: Item}>({});
 
   const buildOrder: () => OrderToPlace = () => {
+    if (!paymentMethod){
+      console.error('Empty payment method');
+      throw Error('Empty payment method');
+    }
     return {
       waiter: waiter,
       table: currentTable?.number,
       food: Object.entries(foodToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
       drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
+      payment_type: paymentMethod,
     }
   }
 
@@ -178,7 +183,7 @@ const TakeOrder = () => {
   }, [foodToOrder, drinksToOrder]);
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentType | ''>('');
 
   return (
     <PaperProvider theme={Theme}>
@@ -196,14 +201,14 @@ const TakeOrder = () => {
         >
           <Text>Seleccione medio de pago:</Text>
           <RadioButton.Group
-            onValueChange={(newValue) => setPaymentMethod(newValue)}
+            onValueChange={(newValue) => setPaymentMethod(newValue as PaymentType)}
             value={paymentMethod}
           >
             <RadioButton.Item value={'CASH'} label={'Efectivo'}/>
             <RadioButton.Item value={'TRANSFER'} label={'Transferencia'}/>
             <RadioButton.Item value={'MERCADOPAGO'} label={'Mercado Pago'}/>
           </RadioButton.Group>
-          <Button mode={"contained"} onPress={() => {
+          <Button mode={"contained"} disabled={!paymentMethod} onPress={() => {
             placeOrder(buildOrder())
               .then(
                 () => {

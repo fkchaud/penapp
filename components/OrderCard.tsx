@@ -3,6 +3,12 @@ import {Chip} from "react-native-paper";
 import {Text, View} from "react-native";
 import {Theme} from "@/constants/Colors";
 
+export const PaymentMethodLabel = {
+  'CASH': 'Efectivo',
+  'TRANSFER': 'Transferencia',
+  'MERCADOPAGO': 'Mercado Pago',
+}
+
 export const StatusLabel = ({status}: { status: OrderStatus }) => {
   const conversion = {
     'PLACED': {text: 'Tomado', color: 'gray'},
@@ -42,7 +48,7 @@ export const OrderCard = ({order}: { order: Order }) => {
       {order.drinks.map(drinks => (
         <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
       ))}
-      <Text>${order.total_price}</Text>
+      <Text>${order.total_price} - {PaymentMethodLabel[order.payment_type]}</Text>
       {order.last_status && <StatusLabel status={order.last_status.status}/>}
     </View>
   )

@@ -1,4 +1,5 @@
 export type OrderStatus = 'PLACED' | 'ACCEPTED' | 'REJECTED' | 'PICKED_UP' | 'DELIVERED' | 'CANCELED';
+export type PaymentType = 'CASH' | 'TRANSFER' | 'MERCADOPAGO';
 
 export type Waiter = {
   name: string;
@@ -27,6 +28,7 @@ export type OrderToPlace = {
     id: number,
     quantity: number,
   }[],
+  payment_type: PaymentType,
 };
 
 type OrderedFood = {
@@ -50,6 +52,7 @@ export type Order = {
     created_at: string,
   };
   total_price: number,
+  payment_type: PaymentType,
 }
 
 export enum UserType {
