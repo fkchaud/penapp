@@ -3,7 +3,7 @@ import {Theme} from "@/constants/Colors";
 import {ActivityIndicator, Button, PaperProvider} from "react-native-paper";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ScrollView, Text} from "react-native";
-import {StatusLabel} from "@/components/order_card";
+import {StatusLabel} from "@/components/OrderCard";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
 import {useIsFocused} from "@react-navigation/core";
@@ -43,6 +43,7 @@ const OrderView = () => {
           {order.drinks.map(drinks => (
             <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
           ))}
+          <Text>${order.total_price}</Text>
           {order.last_status && <StatusLabel status={order.last_status.status}/>}
           {order.last_status.status == 'PLACED'
             ? <>

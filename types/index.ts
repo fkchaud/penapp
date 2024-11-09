@@ -49,6 +49,7 @@ export type Order = {
     status: OrderStatus,
     created_at: string,
   };
+  total_price: number,
 }
 
 export enum UserType {

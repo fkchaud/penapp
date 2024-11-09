@@ -6,7 +6,7 @@ import {FlatGrid} from "react-native-super-grid";
 
 import {Theme} from "@/constants/Colors";
 import {Order} from "@/types";
-import {OrderCard} from "@/components/order_card";
+import {OrderCard} from "@/components/OrderCard";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useIsFocused} from "@react-navigation/core";
 import {Link, router} from "expo-router";

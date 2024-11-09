@@ -5,7 +5,7 @@ import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
 import {FlatGrid} from "react-native-super-grid";
-import {OrderCard} from "@/components/order_card";
+import {OrderCard} from "@/components/OrderCard";
 import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
 import {GetOrdersParams, useApi} from "@/hooks/useApi";

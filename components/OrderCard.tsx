@@ -42,6 +42,7 @@ export const OrderCard = ({order}: { order: Order }) => {
       {order.drinks.map(drinks => (
         <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
       ))}
+      <Text>${order.total_price}</Text>
       {order.last_status && <StatusLabel status={order.last_status.status}/>}
     </View>
   )
