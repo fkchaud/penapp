@@ -1,13 +1,16 @@
 import React from 'react';
-import {FlatList, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {FlatList, ScrollView, TouchableOpacity, View} from "react-native";
 import {
   Button,
   DataTable,
   Icon,
   IconButton,
+  Modal,
   PaperProvider,
+  Portal,
 } from 'react-native-paper';
 import {useContext, useEffect, useState} from "react";
+import { RadioButton, Text } from 'react-native-paper';
 
 import {Item, OrderToPlace, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
@@ -174,8 +177,53 @@ const TakeOrder = () => {
     recalculatePrice(foodToOrder, drinksToOrder);
   }, [foodToOrder, drinksToOrder]);
 
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+
   return (
     <PaperProvider theme={Theme}>
+      <Portal>
+        <Modal
+          visible={modalVisible}
+          onDismiss={() => setModalVisible(false)}
+          contentContainerStyle={{
+            backgroundColor: 'white',
+            width: '90%',
+            height: 300,
+            alignSelf: 'center',
+            padding: 16,
+          }}
+        >
+          <Text>Seleccione medio de pago:</Text>
+          <RadioButton.Group
+            onValueChange={(newValue) => setPaymentMethod(newValue)}
+            value={paymentMethod}
+          >
+            <RadioButton.Item value={'CASH'} label={'Efectivo'}/>
+            <RadioButton.Item value={'TRANSFER'} label={'Transferencia'}/>
+            <RadioButton.Item value={'MERCADOPAGO'} label={'Mercado Pago'}/>
+          </RadioButton.Group>
+          <Button mode={"contained"} onPress={() => {
+            placeOrder(buildOrder())
+              .then(
+                () => {
+                  setOnDismiss(() => router.navigate('/waiter/orders'));
+                  setAlertMessage('Comanda enviada');
+                }
+              )
+              .catch((e) => {
+                console.error(e);
+                setOnDismiss(null);
+                setAlertMessage('Error: ' + e)
+              });
+          }}>
+            Confirmar comanda
+          </Button>
+          <Button mode={"outlined"} onPress={() => setModalVisible(false)}>
+            Cancelar
+          </Button>
+        </Modal>
+      </Portal>
       <View style={{flex: 1}}>
         <View style={{
           padding: 8,
@@ -235,20 +283,9 @@ const TakeOrder = () => {
         }}>
           <Text>Total: ${totalPrice}</Text>
           <Button mode={"contained"} onPress={() => {
-            placeOrder(buildOrder())
-              .then(
-                () => {
-                  setOnDismiss(() => router.navigate('/waiter/orders'));
-                  setAlertMessage('Comanda enviada');
-                }
-              )
-              .catch((e) => {
-                console.error(e);
-                setOnDismiss(null);
-                setAlertMessage('Error: ' + e)
-              });
+            setModalVisible(true)
           }}>
-            Confirmar comanda
+            Continuar
           </Button>
         </View>
       </View>
