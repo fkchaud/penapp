@@ -1,9 +1,11 @@
-import React, {createContext, useContext, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import {Drawer} from "expo-router/drawer";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {PaperProvider, Portal, Snackbar,} from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Theme} from "@/constants/Colors";
 import {UserType} from "@/types";
+
 
 
 export type WaiterContextType = {
@@ -13,6 +15,18 @@ export type WaiterContextType = {
 export const WaiterContext = createContext({});
 const WaiterProvider = ({ children }: {children: React.ReactNode})=> {
   const [waiter, setWaiter] = useState<string>('');
+
+  useEffect(() => {
+    const retrieve = async () => {
+      const wt = await AsyncStorage.getItem('waiter');
+      wt && setWaiter(wt);
+    }
+    retrieve();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('waiter', waiter);
+  }, [waiter]);
 
   return (
     <WaiterContext.Provider value={{waiter, setWaiter}}>
@@ -29,6 +43,19 @@ export const UserTypeContext = createContext<UserTypeContextType | null>(null);
 const UserTypeProvider = ({ children }: {children: React.ReactNode})=> {
   const [userType, setUserType] = useState<UserType>(UserType.Undefined);
 
+  useEffect(() => {
+    const retrieve = async () => {
+      const ut = await AsyncStorage.getItem('userType');
+      if (ut && Object.values(UserType).includes(ut as UserType))
+        setUserType(ut as UserType);
+    }
+    retrieve();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('userType', userType);
+  }, [userType]);
+
   return (
     <UserTypeContext.Provider value={{userType, setUserType}}>
       {children}
@@ -43,6 +70,18 @@ export type ServiceUrlContextType = {
 export const ServiceUrlContext = createContext<ServiceUrlContextType | null>(null);
 const ServiceUrlProvider = ({children }: {children: React.ReactNode})=> {
   const [serviceUrl, setServiceUrl] = useState<string>('http://127.0.0.1:8000/');
+
+  useEffect(() => {
+    const retrieve = async () => {
+      const su = await AsyncStorage.getItem('serviceUrl');
+      su && setServiceUrl(su);
+    }
+    retrieve();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('serviceUrl', serviceUrl);
+  }, [serviceUrl]);
 
   return (
     <ServiceUrlContext.Provider value={{serviceUrl, setServiceUrl}}>
