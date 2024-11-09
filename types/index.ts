@@ -1,4 +1,4 @@
-export type OrderStatus = 'PLACED' | 'ACCEPTED' | 'REJECTED' | 'PREPARED' | 'DELIVERED' | 'CANCELED';
+export type OrderStatus = 'PLACED' | 'ACCEPTED' | 'REJECTED' | 'PICKED_UP' | 'DELIVERED' | 'CANCELED';
 
 export type Waiter = {
   name: string;

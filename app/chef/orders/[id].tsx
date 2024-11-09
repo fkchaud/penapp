@@ -48,7 +48,7 @@ const ChefOrderView = () => {
             ? <>
               <Button
                 mode='contained'
-                onPress={() => updateOrderStatus({orderId: order.id, orderStatus: 'PREPARED'}).then(() => router.navigate('/chef/orders'))}
+                onPress={() => updateOrderStatus({orderId: order.id, orderStatus: 'PICKED_UP'}).then(() => router.navigate('/chef/orders'))}
               >
                 Pedido listo
               </Button>

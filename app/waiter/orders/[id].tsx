@@ -54,7 +54,7 @@ const WaiterOrderView = () => {
               </Button>
             </>
             : null}
-          {order.last_status.status == 'PREPARED'
+          {order.last_status.status == 'PICKED_UP'
             ? <>
               <Button
                 mode='contained'

@@ -8,7 +8,7 @@ export const StatusLabel = ({status}: { status: OrderStatus }) => {
     'PLACED': {text: 'Tomado', color: 'gray'},
     'ACCEPTED': {text: 'Aprobado', color: 'yellow'},
     'REJECTED': {text: 'Rechazado', color: 'red'},
-    'PREPARED': {text: 'Preparado', color: 'green'},
+    'PICKED_UP': {text: 'Recogido', color: 'green'},
     'DELIVERED': {text: 'Entregado', color: 'white'},
     'CANCELED': {text: 'Cancelado', color: 'cyan'},
   }
