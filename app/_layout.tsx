@@ -95,7 +95,7 @@ const MyDrawer = () => {
   const {userType} = useContext(UserTypeContext) as UserTypeContextType;
 
   return (
-    <Drawer>
+    <Drawer backBehavior={'history'}>
       <Drawer.Screen
         name={'index'}
         options={{

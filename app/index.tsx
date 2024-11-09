@@ -74,10 +74,10 @@ const Index = () => {
           {userType == UserType.Waiter && (
             <SelectList
               setSelected={(val: string) => setWaiter(waiters.find(w => w.name == val)?.name || '')}
-              data={waiters.map(w => ({key: w.name, value: w.name}))}
+              data={waiters?.map(w => ({key: w.name, value: w.name})) || []}
               defaultOption={waiter ? {key: waiter, value: waiter} : undefined}
               save='value'
-              search={waiters.length > 5}
+              search={waiters ? waiters.length > 5 : false}
             />
           )}
         </View>
