@@ -1,14 +1,12 @@
 import React from 'react';
-import {Alert, FlatList, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {FlatList, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import {
   Button,
   DataTable,
   Icon,
   IconButton,
-  PaperProvider, Portal, Snackbar,
-  TextInput
+  PaperProvider,
 } from 'react-native-paper';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {useContext, useEffect, useState} from "react";
 
 import {Item, OrderToPlace, Table} from "@/types";
@@ -88,9 +86,6 @@ const TakeOrder = () => {
   const {setAlertMessage, setOnDismiss} = useContext(AlertContext) as AlertContextType;
   const isFocused = useIsFocused();
   const {getDrinks, getFoods, getTables, placeOrder} = useApi();
-
-  const [snackbarSuccessVisible, setSnackbarSuccessVisible] = useState(false);
-  const [snackbarFailVisible, setSnackbarFailVisible] = useState(false);
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
