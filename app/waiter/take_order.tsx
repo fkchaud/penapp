@@ -1,3 +1,4 @@
+import React from 'react';
 import {Alert, FlatList, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import {
   Button,
@@ -26,10 +27,10 @@ const BuyableItem = ({item, addItemToOrder}: {
 
   return (
     <>
-      <DataTable.Cell style={{overflow: "scroll"}}>
-        <Icon size={20} source={item.icon || "blank"}/>
+      <DataTable.Cell>
+        {/* <Icon size={20} source={item.icon || "blank"}/>*/}
         {item.name}
-        <br/>
+        {"\n"}
         Quedan {item.remaining}
       </DataTable.Cell>
       <DataTable.Cell numeric style={{maxWidth: 50}}>${item.price}</DataTable.Cell>
@@ -46,7 +47,6 @@ const BuyableItem = ({item, addItemToOrder}: {
           }}/>
         </View>
       </DataTable.Cell>
-      <DataTable.Cell numeric style={{maxWidth: 50}}>${item.price * qty}</DataTable.Cell>
     </>
   );
 }
@@ -181,59 +181,64 @@ const TakeOrder = () => {
 
   return (
     <PaperProvider theme={Theme}>
-      <SafeAreaView>
-        <ScrollView>
-          <View>
-            <TextInput
-              editable={false}
-              label="Mozo"
-              mode="outlined"
-              value={waiter}
-            />
-          </View>
-          <View>
-            <Text>Mesa</Text>
-            <FlatList
-              horizontal={true}
-              data={tables}
-              renderItem={({item}) => (
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: (currentTable?.number == item.number) ? "red" : "grey",
-                    margin: 1,
-                    width: 40,
-                    height: 40,
-                    alignItems: "center",
-                  }}
-                  onPress={() => {
-                    setCurrentTable(item);
-                  }}
-                >
-                  <Icon source={"table-picnic"} size={20}/>
-                  <Text>{item.number}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
+      <View style={{flex: 1}}>
+        <View style={{
+          padding: 8,
+          height: 76,
+          backgroundColor: 'white',
+          borderBottomColor: 'black',
+          borderBottomWidth: 1,
+          // alignItems: 'center',  // alineación horizontal
+        }}>
+          <Text>Mesa</Text>
+          <FlatList
+            horizontal={true}
+            data={tables}
+            renderItem={({item}) => (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: (currentTable?.number == item.number) ? "red" : "grey",
+                  margin: 1,
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                }}
+                key={item.number}
+                onPress={() => {
+                  setCurrentTable(item);
+                }}
+              >
+                <Icon source={"table-picnic"} size={20}/>
+                <Text>{item.number}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
 
+        <ScrollView
+          showsVerticalScrollIndicator={true}
+          persistentScrollbar={true}
+          style={{
+            flex: 1,
+            padding: 8,
+          }}
+        >
           <Text>Comida</Text>
-          <ScrollView style={{height: 200}}>
-            <DataTable>
-              {Object.values(foods).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
-            </DataTable>
-          </ScrollView>
-
+          <DataTable>
+            {Object.values(foods).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
+          </DataTable>
           <Text>Bebida</Text>
-          <ScrollView style={{height: 200}}>
-            <DataTable>
-              {Object.values(drinks).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addDrinkToOrder} /></DataTable.Row>))}
-            </DataTable>
-          </ScrollView>
+          <DataTable>
+            {Object.values(drinks).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addDrinkToOrder} /></DataTable.Row>))}
+          </DataTable>
+        </ScrollView>
 
-          <View style={{flexDirection: "row"}}>
-            <Text>Total:</Text>
-            <Text>${totalPrice}</Text>
-          </View>
+        <View style={{
+          height: 76,
+          padding: 8,
+          borderTopWidth: 1,
+        }}>
+          <Text>Total: ${totalPrice}</Text>
           <Button mode={"contained"} onPress={() => {
             placeOrder(buildOrder())
               .then(
@@ -250,8 +255,8 @@ const TakeOrder = () => {
           }}>
             Confirmar comanda
           </Button>
-        </ScrollView>
-      </SafeAreaView>
+        </View>
+      </View>
     </PaperProvider>
   );
 }
