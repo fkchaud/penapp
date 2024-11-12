@@ -54,7 +54,7 @@ const BuyableItem = ({item, addItemToOrder}: {
 }
 
 
-const TakeOrder = () => {
+const InternalTakeOrder = () => {
   const def_food: Item[] = [
     {id: 1, name: "Carne a la Olla", price: 1100, icon: "pot-mix", remaining: 10},
     {id: 2, name: "Pollo al disco", price: 1000, icon: "bowl-mix", remaining: 10},
@@ -316,5 +316,18 @@ const TakeOrder = () => {
     </PaperProvider>
   );
 }
+
+
+const TakeOrder = () => {
+  const [key, setKey] = useState<string>();
+
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    setKey(Math.random().toString())
+  }, [isFocused]);
+
+  return <InternalTakeOrder key={key}/>
+}
+
 
 export default TakeOrder;
