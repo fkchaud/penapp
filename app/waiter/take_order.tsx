@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, ScrollView, TouchableOpacity, View} from "react-native";
+import {FlatList, Pressable, ScrollView, TouchableOpacity, View} from "react-native";
 import {
   Button,
   DataTable,
@@ -11,6 +11,7 @@ import {
 } from 'react-native-paper';
 import {useContext, useEffect, useState} from "react";
 import { RadioButton, Text } from 'react-native-paper';
+import Checkbox from 'expo-checkbox';
 
 import {Item, OrderToPlace, PaymentType, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
@@ -94,6 +95,7 @@ const TakeOrder = () => {
   const [totalPrice, setTotalPrice] = useState(0);
 
   const [tables, setTables] = useState<Table[]>([]);
+  const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
   const [foods, setFoods] = useState<{[id: number]: Item}>({});
   const [drinks, setDrinks] = useState<{[id: number]: Item}>({});
 
@@ -113,11 +115,15 @@ const TakeOrder = () => {
 
   useEffect(() => {
     const retrieveTables = async () => {
-      let newTables = await getTables();
-      newTables = newTables.map((table: Table) => ({number: table.number}));
+      let newTables: Table[] = await getTables();
+      newTables = newTables.map((table) => ({number: table.number}));
       setTables(newTables);
-      if (newTables && newTables.length > 0)
-        setCurrentTable(newTables[0]);
+      if (newTables && newTables.length > 0) {
+        if (tableRange.min)
+          setCurrentTable(newTables.find((t) => t.number === tableRange.min) || newTables[0]);
+        else
+          setCurrentTable(newTables[0]);
+      }
     };
     retrieveTables().catch(console.error);
   }, [isFocused]);
@@ -238,11 +244,20 @@ const TakeOrder = () => {
           borderBottomWidth: 1,
           // alignItems: 'center',  // alineación horizontal
         }}>
-          <Text>Mesa</Text>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={{flex: 1}}>Mesa</Text>
+            <Checkbox
+              value={enableAllTables}
+              onValueChange={(value) => setEnableAllTables(value)}
+            />
+            <Pressable onPress={() => setEnableAllTables(!enableAllTables)}>
+              <Text style={{marginLeft: 4}}>Habilitar todas las mesas</Text>
+            </Pressable>
+          </View>
           <FlatList
             horizontal={true}
             data={
-              (tableRange.min && tableRange.max)
+              (tableRange.min && tableRange.max) && !enableAllTables
                 ? tables.filter(t => t.number >= tableRange.min && t.number <= tableRange.max)
                 : tables
             }
