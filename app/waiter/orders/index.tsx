@@ -31,8 +31,8 @@ const Orders = () => {
 
   useEffect(() => {
     const retrieve = async () => {
-      const newOrders = await getOrders({waiter});
-      setOrders(newOrders || []);
+      const newOrders: Order[] = await getOrders({waiter});
+      setOrders(newOrders.sort((a, b) => b.id - a.id) || []);
     };
     retrieve()
       .catch(console.error);
@@ -41,6 +41,11 @@ const Orders = () => {
   if (!orders) {
     return <ActivityIndicator size='large'/>;
   }
+
+  const activeOrders = () =>
+    orders.filter(o => ['PLACED', 'ACCEPTED', 'PICKED_UP', 'REJECTED'].includes(o.last_status.status))
+  const inactiveOrders = () =>
+    orders.filter(o => ['DELIVERED', 'CANCELED'].includes(o.last_status.status))
 
   return (
     <PaperProvider theme={Theme}>
@@ -53,7 +58,7 @@ const Orders = () => {
           <View>
             <FlatGrid
               itemDimension={140}
-              data={orders}
+              data={activeOrders()}
               renderItem={({item}) => (
                 <Link href={{pathname: '/waiter/orders/[id]', params: {id: item.id}}} key={item.id} style={{flexGrow: 1}}>
                   <OrderCard order={item} key={item.id}/>
@@ -61,6 +66,20 @@ const Orders = () => {
               )}
             />
           </View>
+          {inactiveOrders().length > 0 &&
+            <View>
+              <Text>Pasadas:</Text>
+              <FlatGrid
+                itemDimension={140}
+                data={inactiveOrders()}
+                renderItem={({item}) => (
+                  <Link href={{pathname: '/waiter/orders/[id]', params: {id: item.id}}} key={item.id} style={{flexGrow: 1}}>
+                    <OrderCard order={item} key={item.id}/>
+                  </Link>
+                )}
+              />
+            </View>
+          }
         </ScrollView>
       </SafeAreaView>
     </PaperProvider>
