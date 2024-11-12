@@ -85,7 +85,7 @@ const TakeOrder = () => {
     {id: 14, name: "Paso (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
   ];
 
-  const {waiter} = useContext(WaiterContext) as WaiterContextType;
+  const {waiter, tableRange} = useContext(WaiterContext) as WaiterContextType;
   const {setAlertMessage, setOnDismiss} = useContext(AlertContext) as AlertContextType;
   const isFocused = useIsFocused();
   const {getDrinks, getFoods, getTables, placeOrder} = useApi();
@@ -241,7 +241,11 @@ const TakeOrder = () => {
           <Text>Mesa</Text>
           <FlatList
             horizontal={true}
-            data={tables}
+            data={
+              (tableRange.min && tableRange.max)
+                ? tables.filter(t => t.number >= tableRange.min && t.number <= tableRange.max)
+                : tables
+            }
             renderItem={({item}) => (
               <TouchableOpacity
                 style={{

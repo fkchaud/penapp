@@ -8,28 +8,44 @@ import {UserType} from "@/types";
 
 
 
+export type WaiterTableRangeType = {
+  min: number,
+  max: number,
+}
 export type WaiterContextType = {
   waiter: string,
   setWaiter: React.Dispatch<React.SetStateAction<string>>,
+  tableRange: WaiterTableRangeType,
+  setTableRange: React.Dispatch<React.SetStateAction<WaiterTableRangeType>>,
 }
 export const WaiterContext = createContext({});
 const WaiterProvider = ({ children }: {children: React.ReactNode})=> {
   const [waiter, setWaiter] = useState<string>('');
+  const [tableRange, setTableRange] = useState<WaiterTableRangeType>({min: 0, max: 0})
 
   useEffect(() => {
     const retrieve = async () => {
-      const wt = await AsyncStorage.getItem('waiter');
-      wt && setWaiter(wt);
+      AsyncStorage.getItem('waiter').then(
+        wt => wt && setWaiter(wt)
+      );
+      await AsyncStorage.getItem('minTable').then(
+        mt => mt && setTableRange({...tableRange, min: Number(mt)})
+      );
+      await AsyncStorage.getItem('maxTable').then(
+        mt => mt && setTableRange({...tableRange, max: Number(mt)})
+      );
     }
     retrieve();
   }, []);
 
   useEffect(() => {
     AsyncStorage.setItem('waiter', waiter);
-  }, [waiter]);
+    AsyncStorage.setItem('minTable', tableRange.min?.toString() || '');
+    AsyncStorage.setItem('maxTable', tableRange.max?.toString() || '');
+  }, [waiter, tableRange]);
 
   return (
-    <WaiterContext.Provider value={{waiter, setWaiter}}>
+    <WaiterContext.Provider value={{waiter, setWaiter, tableRange, setTableRange}}>
       {children}
     </WaiterContext.Provider>
   );
