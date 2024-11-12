@@ -2,7 +2,7 @@ import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ActivityIndicator, Button, PaperProvider} from "react-native-paper";
 import {useContext, useEffect, useState} from "react";
-import {FlatGrid} from "react-native-super-grid";
+import {SimpleGrid} from "react-native-super-grid";
 
 import {Theme} from "@/constants/Colors";
 import {Order} from "@/types";
@@ -56,7 +56,8 @@ const Orders = () => {
             Tomar pedido
           </Button>
           <View>
-            <FlatGrid
+            <SimpleGrid
+              listKey={'active-orders'}
               itemDimension={140}
               data={activeOrders()}
               renderItem={({item}) => (
@@ -69,7 +70,8 @@ const Orders = () => {
           {inactiveOrders().length > 0 &&
             <View>
               <Text>Pasadas:</Text>
-              <FlatGrid
+              <SimpleGrid
+                listKey={'inactive-orders'}
                 itemDimension={140}
                 data={inactiveOrders()}
                 renderItem={({item}) => (

@@ -4,7 +4,7 @@ import {ActivityIndicator, Checkbox, PaperProvider} from "react-native-paper";
 import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
-import {FlatGrid} from "react-native-super-grid";
+import {SimpleGrid} from "react-native-super-grid";
 import {OrderCard} from "@/components/OrderCard";
 import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
@@ -55,7 +55,8 @@ const Orders = () => {
             <Text>Mostrar todas las ordenes</Text>
           </View>
           <View>
-            <FlatGrid
+            <SimpleGrid
+              listKey={'orders'}
               itemDimension={140}
               data={orders}
               renderItem={({item}) => (
