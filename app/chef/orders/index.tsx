@@ -1,6 +1,6 @@
 import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {ActivityIndicator, Checkbox, PaperProvider} from "react-native-paper";
+import {ActivityIndicator, PaperProvider} from "react-native-paper";
 import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
@@ -9,6 +9,7 @@ import {OrderCard} from "@/components/OrderCard";
 import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
 import {GetOrdersParams, useApi} from "@/hooks/useApi";
+import Checkbox from "expo-checkbox";
 
 
 const ChefOrders = () => {
@@ -51,7 +52,7 @@ const ChefOrders = () => {
         <ScrollView>
           <Text>Pedidos</Text>
           <View style={{flexDirection: 'row'}}>
-            <Checkbox status={showAllOrders ? 'checked' : 'unchecked'} onPress={() => setShowAllOrders(!showAllOrders)}/>
+            <Checkbox value={showAllOrders} onValueChange={(value) => setShowAllOrders(value)}/>
             <Text>Mostrar todas las ordenes</Text>
           </View>
           <View>
