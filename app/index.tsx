@@ -63,15 +63,20 @@ const Index = () => {
 
   useEffect(() => {
     const call = async () => {
-      const newTables = await getTables();
+      const newTables: Table[] = await getTables();
       setTables(newTables);
-      if (!tableRange.min)
-        setTableRange({...tableRange, min: Math.min(...tables.map((t) => t.number))})
-      if (!tableRange.max)
-        setTableRange({...tableRange, max: Math.max(...tables.map((t) => t.number))})
     };
     call().catch(console.error);
-  }, [userType, isFocused, waiters])
+  }, [userType, isFocused])
+
+  useEffect(() => {
+    if (!tables || tables.length === 0) return;
+
+    if (!tableRange.min)
+      setTableRange({...tableRange, min: Math.min(...tables.map((t) => t.number))});
+    if (!tableRange.max)
+      setTableRange({...tableRange, max: Math.max(...tables.map((t) => t.number))});
+  }, [tables]);
 
   return (
     <SafeAreaView>

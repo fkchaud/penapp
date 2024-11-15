@@ -28,21 +28,33 @@ const WaiterProvider = ({ children }: {children: React.ReactNode})=> {
       AsyncStorage.getItem('waiter').then(
         wt => wt && setWaiter(wt)
       );
-      await AsyncStorage.getItem('minTable').then(
-        mt => mt && setTableRange({...tableRange, min: Number(mt)})
-      );
-      await AsyncStorage.getItem('maxTable').then(
-        mt => mt && setTableRange({...tableRange, max: Number(mt)})
+      AsyncStorage.getItem('minTable').then(
+        minT => AsyncStorage.getItem('maxTable').then(
+          maxT => {
+            const newTableRange: {min?: number, max?: number} = {};
+            if (minT)
+              newTableRange.min = Number(minT);
+            if (maxT)
+              newTableRange.max = Number(maxT);
+            setTableRange({...tableRange, ...newTableRange})
+          }
+        )
       );
     }
     retrieve();
   }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem('waiter', waiter);
-    AsyncStorage.setItem('minTable', tableRange.min?.toString() || '');
-    AsyncStorage.setItem('maxTable', tableRange.max?.toString() || '');
-  }, [waiter, tableRange]);
+    if (waiter)
+      AsyncStorage.setItem('waiter', waiter);
+  }, [waiter]);
+
+  useEffect(() => {
+    if (tableRange.min)
+      AsyncStorage.setItem('minTable', tableRange.min?.toString() || '');
+    if (tableRange.max)
+      AsyncStorage.setItem('maxTable', tableRange.max?.toString() || '');
+  }, [tableRange]);
 
   return (
     <WaiterContext.Provider value={{waiter, setWaiter, tableRange, setTableRange}}>
