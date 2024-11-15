@@ -1,46 +1,51 @@
-import React from 'react';
-import {FlatList, Pressable, ScrollView, TouchableOpacity, View, Text} from "react-native";
+import {useContext, useEffect, useState} from "react";
+import {
+  FlatList,
+  Pressable,
+  SectionList,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import Checkbox from 'expo-checkbox';
+import {router} from "expo-router";
 import {
   Button,
-  DataTable,
-  Icon,
+  Divider,
   IconButton,
   Modal,
   PaperProvider,
   Portal,
+  RadioButton,
 } from 'react-native-paper';
-import {useContext, useEffect, useState} from "react";
-import { RadioButton } from 'react-native-paper';
-import Checkbox from 'expo-checkbox';
+import {useIsFocused} from "@react-navigation/core";
 
 import {Item, OrderToPlace, PaymentType, Table} from "@/types";
 import {Theme} from "@/constants/Colors";
 import {AlertContext, AlertContextType, WaiterContext, WaiterContextType} from "@/app/_layout";
-import {useIsFocused} from "@react-navigation/core";
-import {router} from "expo-router";
 import {useApi} from "@/hooks/useApi";
 import "@/css/global.css";
 
 
-const BuyableItem = ({item, addItemToOrder}: {
+const BuyableItem = ({item, addItemToOrder, className, ...props}: {
   item: Item,
   addItemToOrder: (item: Item, quantity: number) => void,
+  className?: string,
 }) => {
   const [qty, setQty] = useState(0);
 
   return (
-    <>
-      <DataTable.Cell>
-        <View>
-          <Text>
-            {item.name}
-          </Text>
-          <Text className={'text-neutral-500 text-sm'}>
-            ${item.price} | Quedan {item.remaining}
-          </Text>
-        </View>
-      </DataTable.Cell>
-      <DataTable.Cell style={{maxWidth: 90}}>
+    <View className={(className ? className + ' ' : '') + 'flex-row items-center px-3 py-1'} {...props}>
+      <View className={'flex-1'}>
+        <Text>
+          {item.name}
+        </Text>
+        <Text className={'text-neutral-500 text-sm'}>
+          ${item.price} | Quedan {item.remaining}
+        </Text>
+      </View>
+      <View>
         <View className={'flex-row items-center'}>
           <IconButton size={10} icon={"minus"} mode={"contained-tonal"} onPress={() => {
             setQty(Math.max(qty - 1, 0));
@@ -52,44 +57,13 @@ const BuyableItem = ({item, addItemToOrder}: {
             addItemToOrder(item, qty + 1);
           }}/>
         </View>
-      </DataTable.Cell>
-    </>
+      </View>
+    </View>
   );
 }
 
 
-const InternalTakeOrder = () => {
-  const def_food: Item[] = [
-    {id: 1, name: "Carne a la Olla", price: 1100, icon: "pot-mix", remaining: 10},
-    {id: 2, name: "Pollo al disco", price: 1000, icon: "bowl-mix", remaining: 10},
-    {id: 3, name: "Hamburguesa", price: 900, icon: "hamburger", remaining: 10},
-    {id: 4, name: "Choripán", price: 700, icon: "sausage", remaining: 10},
-    {id: 5, name: "Sándwich de Pernil (x2 u)", price: 600, icon: "baguette", remaining: 10},
-    {id: 6, name: "Sándwich de Bondiola", price: 900, icon: "baguette", remaining: 10},
-    {id: 7, name: "Papas Fritas", price: 400, icon: "french-fries", remaining: 10},
-    {id: 8, name: "Empanadas (docena)", price: 900, icon: "food-croissant", remaining: 10},
-    {id: 9, name: "Empanadas (media docena)", price: 500, icon: "food-croissant", remaining: 10},
-    {id: 10, name: "Pastelitos (docena)", price: 900, icon: "food-croissant", remaining: 10},
-    {id: 11, name: "Pastelitos (media docena)", price: 500, icon: "food-croissant", remaining: 10},
-  ];
-
-  const def_drinks: Item[] = [
-    {id: 1, name: "Agua (500ml)", price: 200, icon: "bottle-soda", remaining: 10},
-    {id: 2, name: "Saborizada (1l)", price: 300, icon: "bottle-soda", remaining: 10},
-    {id: 3, name: "Cerbeza rubia (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
-    {id: 4, name: "Cerbeza roja (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
-    {id: 5, name: "Cerbeza negra (1l)", price: 500, icon: "glass-mug-variant", remaining: 10},
-    {id: 6, name: "Cerbeza rubia (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
-    {id: 7, name: "Cerbeza roja (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
-    {id: 8, name: "Cerbeza negra (lata)", price: 300, icon: "glass-mug-variant", remaining: 10},
-    {id: 9, name: "Vino (1l)", price: 400, icon: "bottle-wine", remaining: 10},
-    {id: 10, name: "Soda", price: 200, icon: "bottle-soda", remaining: 10},
-    {id: 11, name: "Coca (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
-    {id: 12, name: "Sprite (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
-    {id: 13, name: "Fanta (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
-    {id: 14, name: "Paso (1l)", price: 400, icon: "bottle-soda-classic", remaining: 10},
-  ];
-
+const InternalTakeOrder = ({reset}: {reset: () => void}) => {
   const {waiter, tableRange} = useContext(WaiterContext) as WaiterContextType;
   const {setAlertMessage, setOnDismiss} = useContext(AlertContext) as AlertContextType;
   const isFocused = useIsFocused();
@@ -115,6 +89,10 @@ const InternalTakeOrder = () => {
       drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
       payment_type: paymentMethod,
     }
+  }
+
+  const isItemFood = (item: Item) => {
+    return Object.values(foods).includes(item);
   }
 
   useEffect(() => {
@@ -191,6 +169,11 @@ const InternalTakeOrder = () => {
   useEffect(() => {
     recalculatePrice(foodToOrder, drinksToOrder);
   }, [foodToOrder, drinksToOrder]);
+  const addItemToOrder = (item: Item, quantity: number) => {
+    if (isItemFood(item))
+      return addFoodToOrder(item, quantity);
+    return addDrinkToOrder(item, quantity);
+  }
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentType | ''>('');
@@ -239,23 +222,17 @@ const InternalTakeOrder = () => {
           </Button>
         </Modal>
       </Portal>
-      <View style={{flex: 1}}>
-        <View style={{
-          padding: 8,
-          height: 76,
-          backgroundColor: 'white',
-          borderBottomColor: 'black',
-          borderBottomWidth: 1,
-          // alignItems: 'center',  // alineación horizontal
-        }}>
-          <View style={{flexDirection: 'row'}}>
-            <Text style={{flex: 1}}>Mesa</Text>
-            <Checkbox
-              value={enableAllTables}
-              onValueChange={(value) => setEnableAllTables(value)}
-            />
-            <Pressable onPress={() => setEnableAllTables(!enableAllTables)}>
-              <Text style={{marginLeft: 4}}>Habilitar todas las mesas</Text>
+      <View className={'flex-1'}>
+        <View className={'p-2 bg-white border-b border-b-neutral-500'}>
+          <View className={'flex-row items-center'}>
+            <Text className={'flex-1 text-xl font-bold'}>Mesa</Text>
+            <Pressable className={'flex-row items-center'} onPress={() => setEnableAllTables(!enableAllTables)}>
+              <Checkbox
+                value={enableAllTables}
+                onValueChange={(value) => setEnableAllTables(value)}
+                style={{width: 16, height: 16, borderWidth: 1}}
+              />
+              <Text className={'ml-1 text-sm text-neutral-700'}>Mostrar todas las mesas</Text>
             </Pressable>
           </View>
           <FlatList
@@ -267,54 +244,49 @@ const InternalTakeOrder = () => {
             }
             renderItem={({item}) => (
               <TouchableOpacity
-                style={{
-                  backgroundColor: (currentTable?.number == item.number) ? "red" : "grey",
-                  margin: 1,
-                  width: 40,
-                  height: 40,
-                  alignItems: "center",
-                }}
+                className={'m-0.5 w-10 h-10 items-center justify-center rounded ' + ((currentTable?.number == item.number) ? 'bg-yellow-800/80' : 'bg-yellow-800/40')}
                 key={item.number}
                 onPress={() => {
                   setCurrentTable(item);
                 }}
               >
-                <Icon source={"table-picnic"} size={20}/>
-                <Text>{item.number}</Text>
+                <Text className={currentTable?.number == item.number ? 'font-bold text-white' : ''}>{item.number}</Text>
               </TouchableOpacity>
             )}
           />
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={true}
-          persistentScrollbar={true}
-          style={{
-            flex: 1,
-            padding: 8,
-          }}
-        >
-          <Text>Comida</Text>
-          <DataTable>
-            {Object.values(foods).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addFoodToOrder} /></DataTable.Row>))}
-          </DataTable>
-          <Text>Bebida</Text>
-          <DataTable>
-            {Object.values(drinks).map((item) => (<DataTable.Row key={item.name}><BuyableItem item={item} addItemToOrder={addDrinkToOrder} /></DataTable.Row>))}
-          </DataTable>
-        </ScrollView>
+        <SectionList
+          sections={[
+            {
+              title: "Comida",
+              data: Object.values(foods),
+            },
+            {
+              title: "Bebida",
+              data: Object.values(drinks),
+            },
+          ]}
+          keyExtractor={(item) => `${isItemFood(item) ? 'F' : 'D'}${item.id}`}
+          renderItem={
+            ({item}) =>
+              <BuyableItem key={item.id.toString()} item={item} addItemToOrder={addItemToOrder} />
+          }
+          renderSectionHeader={
+            ({section: {title}}) =>
+              <Text className={'text-xl font-bold bg-[#f3f3f3DD] py-2 text-center'}>{title}</Text>
+          }
+          ItemSeparatorComponent={Divider}
+        />
 
-        <View style={{
-          height: 76,
-          padding: 8,
-          borderTopWidth: 1,
-        }}>
-          <Text>Total: ${totalPrice}</Text>
-          <Button mode={"contained"} onPress={() => {
-            setModalVisible(true)
-          }}>
-            Continuar
-          </Button>
+        <View className={'p-3 border-t border-t-neutral-500'}>
+          <Text className={'text-lg'}>Total: ${totalPrice}</Text>
+          <View className={'flex-row'}>
+            <Button mode={"outlined"} onPress={reset} style={{flex: 1}}>Limpiar</Button>
+            <Button mode={"contained"} onPress={() => setModalVisible(true)} style={{flex: 2}}>
+              Continuar
+            </Button>
+          </View>
         </View>
       </View>
     </PaperProvider>
@@ -325,12 +297,13 @@ const InternalTakeOrder = () => {
 const TakeOrder = () => {
   const [key, setKey] = useState<string>();
 
+  const reset = () => setKey(Math.random().toString());
   const isFocused = useIsFocused();
   useEffect(() => {
-    setKey(Math.random().toString())
+    reset();
   }, [isFocused]);
 
-  return <InternalTakeOrder key={key}/>
+  return <InternalTakeOrder key={key} reset={reset}/>
 }
 
 
