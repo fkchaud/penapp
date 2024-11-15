@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, Pressable, ScrollView, TouchableOpacity, View} from "react-native";
+import {FlatList, Pressable, ScrollView, TouchableOpacity, View, Text} from "react-native";
 import {
   Button,
   DataTable,
@@ -10,7 +10,7 @@ import {
   Portal,
 } from 'react-native-paper';
 import {useContext, useEffect, useState} from "react";
-import { RadioButton, Text } from 'react-native-paper';
+import { RadioButton } from 'react-native-paper';
 import Checkbox from 'expo-checkbox';
 
 import {Item, OrderToPlace, PaymentType, Table} from "@/types";
@@ -19,6 +19,7 @@ import {AlertContext, AlertContextType, WaiterContext, WaiterContextType} from "
 import {useIsFocused} from "@react-navigation/core";
 import {router} from "expo-router";
 import {useApi} from "@/hooks/useApi";
+import "@/css/global.css";
 
 
 const BuyableItem = ({item, addItemToOrder}: {
@@ -30,16 +31,19 @@ const BuyableItem = ({item, addItemToOrder}: {
   return (
     <>
       <DataTable.Cell>
-        {/* <Icon size={20} source={item.icon || "blank"}/>*/}
-        {item.name}
-        {"\n"}
-        Quedan {item.remaining}
+        <View>
+          <Text>
+            {item.name}
+          </Text>
+          <Text className={'text-neutral-500 text-sm'}>
+            ${item.price} | Quedan {item.remaining}
+          </Text>
+        </View>
       </DataTable.Cell>
-      <DataTable.Cell numeric style={{maxWidth: 50}}>${item.price}</DataTable.Cell>
       <DataTable.Cell style={{maxWidth: 90}}>
-        <View style={{flexDirection: "row", alignItems: "center"}}>
+        <View className={'flex-row items-center'}>
           <IconButton size={10} icon={"minus"} mode={"contained-tonal"} onPress={() => {
-            setQty(qty - 1);
+            setQty(Math.max(qty - 1, 0));
             addItemToOrder(item, qty - 1);
           }}/>
           <Text>{qty}</Text>
