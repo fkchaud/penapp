@@ -1,6 +1,7 @@
 import {useContext, useEffect, useState} from "react";
 import {
   FlatList,
+  Modal,
   Pressable,
   SectionList,
   Text,
@@ -14,11 +15,9 @@ import {
   Button,
   Divider,
   IconButton,
-  Modal,
   PaperProvider,
-  Portal,
-  RadioButton,
 } from 'react-native-paper';
+import RadioGroup from 'react-native-radio-buttons-group';
 import {useIsFocused} from "@react-navigation/core";
 
 import {Item, OrderToPlace, PaymentType, Table} from "@/types";
@@ -180,48 +179,74 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
 
   return (
     <PaperProvider theme={Theme}>
-      <Portal>
-        <Modal
-          visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
-          contentContainerStyle={{
-            backgroundColor: 'white',
-            width: '90%',
-            height: 300,
-            alignSelf: 'center',
-            padding: 16,
-          }}
-        >
-          <Text>Seleccione medio de pago:</Text>
-          <RadioButton.Group
-            onValueChange={(newValue) => setPaymentMethod(newValue as PaymentType)}
-            value={paymentMethod}
-          >
-            <RadioButton.Item value={'CASH'} label={'Efectivo'}/>
-            <RadioButton.Item value={'TRANSFER'} label={'Transferencia'}/>
-            <RadioButton.Item value={'MERCADOPAGO'} label={'Mercado Pago'}/>
-          </RadioButton.Group>
-          <Button mode={"contained"} disabled={!paymentMethod} onPress={() => {
-            placeOrder(buildOrder())
-              .then(
-                () => {
-                  setOnDismiss(() => router.navigate('/waiter/orders'));
-                  setAlertMessage('Comanda enviada');
-                }
-              )
-              .catch((e) => {
-                console.error(e);
-                setOnDismiss(null);
-                setAlertMessage('Error: ' + e)
-              });
-          }}>
-            Confirmar comanda
-          </Button>
-          <Button mode={"outlined"} onPress={() => setModalVisible(false)}>
-            Cancelar
-          </Button>
-        </Modal>
-      </Portal>
+      <Modal
+        visible={modalVisible}
+        onDismiss={() => setModalVisible(false)}
+        onRequestClose={() => setModalVisible(false)}
+        transparent={true}
+        animationType={'fade'}
+      >
+        <View className={'flex-1 justify-center items-center bg-black/25'}>
+          <View className={'align-middle bg-white p-6 shadow w-5/6'}>
+            <View className={'align-middle'}>
+              <Text className={'font-bold'}>Su pedido:</Text>
+              {Object.entries(foodToOrder).map(([fid, q]) => <Text key={fid}>{q}x {foods[Number(fid)]?.name}</Text>)}
+              {Object.entries(drinksToOrder).map(([did,q]) => <Text key={did}>{q}x {drinks[Number(did)]?.name}</Text>)}
+              <Text><Text className={'font-bold'}>A pagar:</Text> ${totalPrice}</Text>
+              <Text> </Text>
+              <Text className={'mb-2'}>Seleccione medio de pago:</Text>
+              <RadioGroup
+                radioButtons={[
+                  {
+                    id: 'CASH',
+                    label: 'Efectivo',
+                    value: 'CASH',
+                    borderSize: 1.5,
+                    borderColor: '#909090',
+                    size: 16,
+                  },
+                  {
+                    id: 'TRANSFER',
+                    label: 'Transferencia',
+                    value: 'TRANSFER',
+                    borderSize: 1.5,
+                    borderColor: '#909090',
+                    size: 16,
+                  },
+                ]}
+                onPress={selectedId => setPaymentMethod(selectedId as PaymentType)}
+                selectedId={paymentMethod}
+                containerStyle={{alignItems: 'flex-start'}}
+              />
+              {paymentMethod === 'TRANSFER' && <Text>
+                  Alias: seminario.mendoza
+              </Text>}
+              <Text> </Text>
+            </View>
+            <View>
+              <Button compact={true} mode={"contained"} disabled={!paymentMethod} onPress={() => {
+                placeOrder(buildOrder())
+                  .then(
+                    () => {
+                      setOnDismiss(() => router.navigate('/waiter/orders'));
+                      setAlertMessage('Comanda enviada');
+                    }
+                  )
+                  .catch((e) => {
+                    console.error(e);
+                    setOnDismiss(null);
+                    setAlertMessage('Error: ' + e)
+                  });
+              }}>
+                Confirmar comanda
+              </Button>
+              <Button compact={true} mode={"outlined"} onPress={() => setModalVisible(false)}>
+                Cancelar
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <View className={'flex-1'}>
         <View className={'p-2 bg-white border-b border-b-neutral-500'}>
           <View className={'flex-row items-center'}>
