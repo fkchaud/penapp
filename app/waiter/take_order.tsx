@@ -28,11 +28,12 @@ import {useApi} from "@/hooks/useApi";
 import "@/css/global.css";
 
 
-const BuyableItem = ({item, addItemToOrder, className, ...props}: {
+type BuyableItemProps = {
   item: Item,
   addItemToOrder: (item: Item, quantity: number) => void,
   className?: string,
-}) => {
+};
+const BuyableItem = ({item, addItemToOrder, className, ...props}: BuyableItemProps) => {
   const [qty, setQty] = useState(0);
 
   return (
@@ -63,6 +64,8 @@ const BuyableItem = ({item, addItemToOrder, className, ...props}: {
 }
 
 
+type FoodById = {[id: number]: Item};
+type QuantityById = {[id: number]: number};
 const InternalTakeOrder = ({reset}: {reset: () => void}) => {
   const {waiter, tableRange} = useContext(WaiterContext) as WaiterContextType;
   const {setAlertMessage, setOnDismiss} = useContext(AlertContext) as AlertContextType;
@@ -76,8 +79,8 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
 
   const [tables, setTables] = useState<Table[]>([]);
   const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
-  const [foods, setFoods] = useState<{[id: number]: Item}>({});
-  const [drinks, setDrinks] = useState<{[id: number]: Item}>({});
+  const [foods, setFoods] = useState<FoodById>({});
+  const [drinks, setDrinks] = useState<FoodById>({});
 
   const buildOrder: () => OrderToPlace = () => {
     if (!paymentMethod){
@@ -116,14 +119,14 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
   useEffect(() => {
     const retrieveFoods = async () => {
       const newFoods = await getFoods();
-      setFoods(newFoods.reduce((acc: {[id: number]: Item}, f: Item) => {
+      setFoods(newFoods.reduce((acc: FoodById, f: Item) => {
         acc[f.id] = f;
         return acc;
       }, {}));
     };
     const retrieveDrinks = async () => {
       const newDrinks = await getDrinks();
-      setDrinks(newDrinks.reduce((acc: {[id: number]: Item}, d: Item) => {
+      setDrinks(newDrinks.reduce((acc: FoodById, d: Item) => {
         acc[d.id] = d;
         return acc;
       }, {}));
@@ -133,10 +136,7 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
 
   }, [isFocused]);
 
-  const recalculatePrice = (
-    foodToOrder: {[id: number]: number},
-    drinksToOrder: {[id: number]: number}
-  ) => {
+  const recalculatePrice = (foodToOrder: QuantityById, drinksToOrder: QuantityById) => {
     let price = 0;
     for (const id in foodToOrder){
       const food = foods[id];
@@ -149,7 +149,7 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
     setTotalPrice(price);
   };
 
-  const [foodToOrder, setFoodToOrder] = useState<{[id: number]: number}>({})
+  const [foodToOrder, setFoodToOrder] = useState<QuantityById>({})
   const addFoodToOrder = (food: Item, quantity: number) => {
     if (quantity > 0)
       setFoodToOrder({...foodToOrder, [food.id]: quantity});
@@ -159,7 +159,7 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
         return newFoodToOrder;
       });
   };
-  const [drinksToOrder, setDrinksToOrder] = useState<{[id: number]: number}>({})
+  const [drinksToOrder, setDrinksToOrder] = useState<QuantityById>({})
   const addDrinkToOrder = (drink: Item, quantity: number) => {
     if (quantity > 0)
       setDrinksToOrder({...drinksToOrder, [drink.id]: quantity});
