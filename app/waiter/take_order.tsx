@@ -81,15 +81,13 @@ const BuyableItem = ({
 };
 
 type ItemById = { [id: number]: Item };
-type QuantityById = { [id: number]: number };
+type QuantityByItem = Map<Item, number>;
 
 type ConfirmOrderModalProps = {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
-  foodToOrder: QuantityById;
-  drinksToOrder: QuantityById;
-  foods: ItemById;
-  drinks: ItemById;
+  foodToOrder: QuantityByItem;
+  drinksToOrder: QuantityByItem;
   totalPrice: number;
   paymentMethod: PaymentType | "";
   setPaymentMethod: (paymentMethod: PaymentType) => void;
@@ -101,8 +99,6 @@ const ConfirmOrderModal = ({
   setModalVisible,
   foodToOrder,
   drinksToOrder,
-  foods,
-  drinks,
   totalPrice,
   paymentMethod,
   setPaymentMethod,
@@ -120,14 +116,14 @@ const ConfirmOrderModal = ({
         <View className={"align-middle bg-white p-6 shadow w-5/6"}>
           <View className={"align-middle"}>
             <Text className={"font-bold"}>Su pedido:</Text>
-            {Object.entries(foodToOrder).map(([fid, q]) => (
-              <Text key={fid}>
-                {q}x {foods[Number(fid)]?.name}
+            {[...foodToOrder.entries()].map(([food, qty]) => (
+              <Text key={food.id.toString()}>
+                {qty}x {food.name}
               </Text>
             ))}
-            {Object.entries(drinksToOrder).map(([did, q]) => (
-              <Text key={did}>
-                {q}x {drinks[Number(did)]?.name}
+            {[...drinksToOrder.entries()].map(([drink, qty]) => (
+              <Text key={drink.id.toString()}>
+                {qty}x {drink.name}
               </Text>
             ))}
             <Text>
@@ -214,12 +210,12 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     return {
       waiter: waiter,
       table: currentTable?.number,
-      food: Object.entries(foodToOrder).map(([id, quantity]) => ({
-        id: Number(id),
+      food: [...foodToOrder.entries()].map(([food, quantity]) => ({
+        id: food.id,
         quantity,
       })),
-      drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({
-        id: Number(id),
+      drinks: [...drinksToOrder.entries()].map(([drink, quantity]) => ({
+        id: drink.id,
         quantity,
       })),
       payment_type: paymentMethod,
@@ -271,37 +267,37 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   }, [isFocused]);
 
   const recalculatePrice = (
-    foodToOrder: QuantityById,
-    drinksToOrder: QuantityById,
+    foodToOrder: QuantityByItem,
+    drinksToOrder: QuantityByItem,
   ) => {
     let price = 0;
-    for (const id in foodToOrder) {
-      const food = foods[id];
-      price += food.price * foodToOrder[id];
-    }
-    for (const id in drinksToOrder) {
-      const drink = drinks[id];
-      price += drink.price * drinksToOrder[id];
-    }
+    foodToOrder.forEach((qty, food) => {
+      price += food.price * qty;
+    });
+    drinksToOrder.forEach((qty, drink) => {
+      price += drink.price * qty;
+    });
     setTotalPrice(price);
   };
 
-  const [foodToOrder, setFoodToOrder] = useState<QuantityById>({});
+  const [foodToOrder, setFoodToOrder] = useState<QuantityByItem>(new Map());
   const addFoodToOrder = (food: Item, quantity: number) => {
-    if (quantity > 0) setFoodToOrder({ ...foodToOrder, [food.id]: quantity });
+    if (quantity > 0) setFoodToOrder(new Map(foodToOrder).set(food, quantity));
     else
       setFoodToOrder((prevFoodToOrder) => {
-        const { [food.id]: _, ...newFoodToOrder } = prevFoodToOrder;
+        const newFoodToOrder = new Map(prevFoodToOrder);
+        newFoodToOrder.delete(food);
         return newFoodToOrder;
       });
   };
-  const [drinksToOrder, setDrinksToOrder] = useState<QuantityById>({});
+  const [drinksToOrder, setDrinksToOrder] = useState<QuantityByItem>(new Map());
   const addDrinkToOrder = (drink: Item, quantity: number) => {
     if (quantity > 0)
-      setDrinksToOrder({ ...drinksToOrder, [drink.id]: quantity });
+      setDrinksToOrder(new Map(drinksToOrder).set(drink, quantity));
     else
-      setDrinksToOrder((prevDrinkToOrder) => {
-        const { [drink.id]: _, ...newDrinksToOrder } = prevDrinkToOrder;
+      setDrinksToOrder((prevDrinksToOrder) => {
+        const newDrinksToOrder = new Map(prevDrinksToOrder);
+        newDrinksToOrder.delete(drink);
         return newDrinksToOrder;
       });
   };
@@ -323,8 +319,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         setModalVisible={setModalVisible}
         foodToOrder={foodToOrder}
         drinksToOrder={drinksToOrder}
-        foods={foods}
-        drinks={drinks}
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
