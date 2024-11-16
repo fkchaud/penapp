@@ -121,6 +121,7 @@ const ServiceUrlProvider = ({children }: {children: React.ReactNode})=> {
 
 const MyDrawer = () => {
   const {userType} = useContext(UserTypeContext) as UserTypeContextType;
+  const {waiter} = useContext(WaiterContext) as WaiterContextType;
 
   return (
     <Drawer backBehavior={'history'}>
@@ -160,7 +161,7 @@ const MyDrawer = () => {
           options={{
             drawerLabel: "Tomar pedido",
             title: "Tomar pedido",
-            drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'},
+            drawerItemStyle: {display: ((userType == UserType.Waiter) && waiter) ? 'flex' : 'none'},
           }}
       />
       <Drawer.Screen name={'waiter/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />

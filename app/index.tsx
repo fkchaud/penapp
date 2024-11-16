@@ -1,6 +1,6 @@
 import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {SegmentedButtons, TextInput} from "react-native-paper";
+import {Button, HelperText, SegmentedButtons, TextInput} from "react-native-paper";
 import {useContext, useEffect, useState} from "react";
 import {Table, UserType, UserTypeByKey, Waiter} from "@/types";
 import {
@@ -82,23 +82,26 @@ const Index = () => {
     <SafeAreaView>
       <ScrollView>
         <View>
-          <Text>PeñApp</Text>
           <TextInput
             label='Url del servidor:'
             value={serviceUrl}
             mode='outlined'
             onChangeText={(text) => setServiceUrl(text)}
           />
+          <Text />
           <UserTypeSelector />
           {userType == UserType.Waiter && (
             <>
+              <HelperText type={'error'} visible={!waiter}>Seleccione el mozo antes de continuar</HelperText>
               <SelectList
                 setSelected={(val: string) => setWaiter(waiters.find(w => w.name == val)?.name || '')}
                 data={waiters?.map(w => ({key: w.name, value: w.name})) || []}
                 defaultOption={waiter ? {key: waiter, value: waiter} : undefined}
                 save='value'
                 search={waiters ? waiters.length > 5 : false}
+                boxStyles={waiter ? {} : {borderColor: 'red'}}
               />
+              <Text />
               {tables.length > 0 &&
                 <View>
                   <Text>Mesas que atiende: {tableRange.min} - {tableRange.max}</Text>

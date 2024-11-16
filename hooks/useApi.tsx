@@ -75,8 +75,16 @@ export const useApi = () => {
         body: JSON.stringify(order),
         headers: {'Content-Type': 'application/json'}
       });
-      const json = await response.json();
-      return json.results;
+      if (response.ok) {
+        const json = await response.json();
+        return json.results;
+      } else {
+        console.log(response);
+        const json = await response.json();
+        console.log(json);
+        if (json?.error)
+          throw Error(json?.error);
+      }
     } catch (error) {
       console.error(error);
       throw error;
