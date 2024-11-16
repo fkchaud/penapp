@@ -30,16 +30,16 @@ import "@/css/global.css";
 type BuyableItemProps = {
   item: Item;
   addItemToOrder: (item: Item, quantity: number) => void;
+  quantity: number;
   className?: string;
 };
 const BuyableItem = ({
   item,
   addItemToOrder,
+  quantity,
   className,
   ...props
 }: BuyableItemProps) => {
-  const [qty, setQty] = useState(0);
-
   return (
     <View
       className={
@@ -60,18 +60,16 @@ const BuyableItem = ({
             icon={"minus"}
             mode={"contained-tonal"}
             onPress={() => {
-              setQty(Math.max(qty - 1, 0));
-              addItemToOrder(item, qty - 1);
+              addItemToOrder(item, quantity - 1);
             }}
           />
-          <Text>{qty}</Text>
+          <Text>{quantity}</Text>
           <IconButton
             size={10}
             icon={"plus"}
             mode={"contained-tonal"}
             onPress={() => {
-              setQty(qty + 1);
-              addItemToOrder(item, qty + 1);
+              addItemToOrder(item, quantity + 1);
             }}
           />
         </View>
@@ -316,9 +314,17 @@ const ConfirmBottomBar = ({
 type FoodPickerProps = {
   foods: Item[];
   drinks: Item[];
+  foodToOrder: QuantityByItem;
+  drinksToOrder: QuantityByItem;
   addItemToOrder: (item: Item, quantity: number) => void;
 };
-const FoodPicker = ({ foods, drinks, addItemToOrder }: FoodPickerProps) => {
+const FoodPicker = ({
+  foods,
+  drinks,
+  addItemToOrder,
+  foodToOrder,
+  drinksToOrder,
+}: FoodPickerProps) => {
   const isItemFood = (item: Item) => {
     return foods.includes(item);
   };
@@ -334,6 +340,11 @@ const FoodPicker = ({ foods, drinks, addItemToOrder }: FoodPickerProps) => {
         <BuyableItem
           key={item.id.toString()}
           item={item}
+          quantity={
+            isItemFood(item)
+              ? foodToOrder.get(item) || 0
+              : drinksToOrder.get(item) || 0
+          }
           addItemToOrder={addItemToOrder}
         />
       )}
@@ -496,6 +507,8 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         <FoodPicker
           foods={Object.values(foods)}
           drinks={Object.values(drinks)}
+          foodToOrder={foodToOrder}
+          drinksToOrder={drinksToOrder}
           addItemToOrder={addItemToOrder}
         />
         <ConfirmBottomBar
