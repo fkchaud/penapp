@@ -91,7 +91,6 @@ type ConfirmOrderModalProps = {
   totalPrice: number;
   paymentMethod: PaymentType | "";
   setPaymentMethod: (paymentMethod: PaymentType) => void;
-  buildOrder: () => OrderToPlace;
   onConfirm: () => void;
 };
 const ConfirmOrderModal = ({
@@ -184,21 +183,103 @@ const ConfirmOrderModal = ({
   );
 };
 
+type TableTopBarProps = {
+  currentTable: Table | null;
+  setCurrentTable: (table: Table) => void;
+};
+const TableTopBar = ({ currentTable, setCurrentTable }: TableTopBarProps) => {
+  const { tableRange } = useContext(WaiterContext) as WaiterContextType;
+  const isFocused = useIsFocused();
+  const { getTables } = useApi();
+
+  const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
+  const [tables, setTables] = useState<Table[]>([]);
+
+  useEffect(() => {
+    const retrieveTables = async () => {
+      let newTables: Table[] = await getTables();
+      newTables = newTables.map((table) => ({ number: table.number }));
+      setTables(newTables);
+      if (newTables && newTables.length > 0) {
+        if (tableRange.min)
+          setCurrentTable(
+            newTables.find((t) => t.number === tableRange.min) || newTables[0],
+          );
+        else setCurrentTable(newTables[0]);
+      }
+    };
+    retrieveTables().catch(console.error);
+  }, [isFocused]);
+
+  return (
+    <View className={"p-2 bg-white border-b border-b-neutral-500"}>
+      <View className={"flex-row items-center"}>
+        <Text className={"flex-1 text-xl font-bold"}>Mesa</Text>
+        <Pressable
+          className={"flex-row items-center"}
+          onPress={() => setEnableAllTables(!enableAllTables)}
+        >
+          <Checkbox
+            value={enableAllTables}
+            onValueChange={(value) => setEnableAllTables(value)}
+            style={{ width: 16, height: 16, borderWidth: 1 }}
+          />
+          <Text className={"ml-1 text-sm text-neutral-700"}>
+            Mostrar todas las mesas
+          </Text>
+        </Pressable>
+      </View>
+      <FlatList
+        horizontal={true}
+        data={
+          tableRange.min && tableRange.max && !enableAllTables
+            ? tables.filter(
+                (t) => t.number >= tableRange.min && t.number <= tableRange.max,
+              )
+            : tables
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            className={
+              "m-0.5 w-10 h-10 items-center justify-center rounded " +
+              (currentTable?.number == item.number
+                ? "bg-yellow-800/80"
+                : "bg-yellow-800/40")
+            }
+            key={item.number}
+            onPress={() => {
+              setCurrentTable(item);
+            }}
+          >
+            <Text
+              className={
+                currentTable?.number == item.number
+                  ? "font-bold text-white"
+                  : ""
+              }
+            >
+              {item.number}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
+};
+
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
-  const { waiter, tableRange } = useContext(WaiterContext) as WaiterContextType;
+  const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
     AlertContext,
   ) as AlertContextType;
   const isFocused = useIsFocused();
-  const { getDrinks, getFoods, getTables, placeOrder } = useApi();
+  const { getDrinks, getFoods, placeOrder } = useApi();
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
   const commentInputRef = useRef<TextInput>(null);
 
-  const [tables, setTables] = useState<Table[]>([]);
-  const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
   const [foods, setFoods] = useState<ItemById>({});
   const [drinks, setDrinks] = useState<ItemById>({});
 
@@ -226,22 +307,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const isItemFood = (item: Item) => {
     return Object.values(foods).includes(item);
   };
-
-  useEffect(() => {
-    const retrieveTables = async () => {
-      let newTables: Table[] = await getTables();
-      newTables = newTables.map((table) => ({ number: table.number }));
-      setTables(newTables);
-      if (newTables && newTables.length > 0) {
-        if (tableRange.min)
-          setCurrentTable(
-            newTables.find((t) => t.number === tableRange.min) || newTables[0],
-          );
-        else setCurrentTable(newTables[0]);
-      }
-    };
-    retrieveTables().catch(console.error);
-  }, [isFocused]);
 
   useEffect(() => {
     const retrieveFoods = async () => {
@@ -322,7 +387,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
-        buildOrder={buildOrder}
         onConfirm={() => {
           placeOrder(buildOrder())
             .then(() => {
@@ -343,60 +407,10 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
           return false;
         }}
       >
-        <View className={"p-2 bg-white border-b border-b-neutral-500"}>
-          <View className={"flex-row items-center"}>
-            <Text className={"flex-1 text-xl font-bold"}>Mesa</Text>
-            <Pressable
-              className={"flex-row items-center"}
-              onPress={() => setEnableAllTables(!enableAllTables)}
-            >
-              <Checkbox
-                value={enableAllTables}
-                onValueChange={(value) => setEnableAllTables(value)}
-                style={{ width: 16, height: 16, borderWidth: 1 }}
-              />
-              <Text className={"ml-1 text-sm text-neutral-700"}>
-                Mostrar todas las mesas
-              </Text>
-            </Pressable>
-          </View>
-          <FlatList
-            horizontal={true}
-            data={
-              tableRange.min && tableRange.max && !enableAllTables
-                ? tables.filter(
-                    (t) =>
-                      t.number >= tableRange.min && t.number <= tableRange.max,
-                  )
-                : tables
-            }
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                className={
-                  "m-0.5 w-10 h-10 items-center justify-center rounded " +
-                  (currentTable?.number == item.number
-                    ? "bg-yellow-800/80"
-                    : "bg-yellow-800/40")
-                }
-                key={item.number}
-                onPress={() => {
-                  setCurrentTable(item);
-                }}
-              >
-                <Text
-                  className={
-                    currentTable?.number == item.number
-                      ? "font-bold text-white"
-                      : ""
-                  }
-                >
-                  {item.number}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-
+        <TableTopBar
+          currentTable={currentTable}
+          setCurrentTable={setCurrentTable}
+        />
         <SectionList
           sections={[
             {
