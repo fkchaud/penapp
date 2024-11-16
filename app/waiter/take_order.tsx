@@ -251,7 +251,7 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
           </View>
         </View>
       </Modal>
-      <View className={'flex-1'} onStartShouldSetResponder={e => {
+      <View className={'flex-1'} onStartShouldSetResponder={() => {
         commentInputRef.current?.blur();
         return false;
       }}>

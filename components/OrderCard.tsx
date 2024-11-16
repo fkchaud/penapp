@@ -12,7 +12,7 @@ export const PaymentMethodLabel = {
 }
 
 export const StatusLabel = ({status}: { status: OrderStatus }) => {
-  const conversion = {
+  const conversion: Record<OrderStatus, {text: string, color: string}> = {
     'PLACED': {text: 'Tomado', color: 'gray'},
     'ACCEPTED': {text: 'Aprobado', color: 'yellow'},
     'REJECTED': {text: 'Rechazado', color: 'red'},
