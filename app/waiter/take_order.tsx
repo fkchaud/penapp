@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { LegacyRef, useContext, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -267,6 +267,52 @@ const TableTopBar = ({ currentTable, setCurrentTable }: TableTopBarProps) => {
   );
 };
 
+type ConfirmBottomBarProps = {
+  commentInputRef: LegacyRef<TextInput>;
+  comment: string;
+  setComment: (comment: string) => void;
+  totalPrice: number;
+  reset: () => void;
+  setModalVisible: (visible: boolean) => void;
+};
+const ConfirmBottomBar = ({
+  commentInputRef,
+  comment,
+  setComment,
+  totalPrice,
+  reset,
+  setModalVisible,
+}: ConfirmBottomBarProps) => {
+  return (
+    <View className={"p-3 border-t border-t-neutral-500"}>
+      <TextInput
+        ref={commentInputRef}
+        placeholder={"Agregar comentario"}
+        value={comment}
+        onChangeText={setComment}
+        maxLength={150}
+        blurOnSubmit={true}
+        returnKeyType={"done"}
+        multiline={true}
+      />
+      <Divider />
+      <Text className={"text-lg"}>Total: ${totalPrice}</Text>
+      <View className={"flex-row"}>
+        <Button mode={"outlined"} onPress={reset} style={{ flex: 1 }}>
+          Limpiar
+        </Button>
+        <Button
+          mode={"contained"}
+          onPress={() => setModalVisible(true)}
+          style={{ flex: 2 }}
+        >
+          Continuar
+        </Button>
+      </View>
+    </View>
+  );
+};
+
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
@@ -308,6 +354,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     return Object.values(foods).includes(item);
   };
 
+  // Get foods and drinks every time the screen is focused
   useEffect(() => {
     const retrieveFoods = async () => {
       const newFoods = await getFoods();
@@ -366,6 +413,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         return newDrinksToOrder;
       });
   };
+  // Recalculate price every time foodToOrder and drinksToOrder are updated
   useEffect(() => {
     recalculatePrice(foodToOrder, drinksToOrder);
   }, [foodToOrder, drinksToOrder]);
@@ -440,32 +488,14 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
           ItemSeparatorComponent={Divider}
         />
 
-        <View className={"p-3 border-t border-t-neutral-500"}>
-          <TextInput
-            ref={commentInputRef}
-            placeholder={"Agregar comentario"}
-            value={comment}
-            onChangeText={setComment}
-            maxLength={150}
-            blurOnSubmit={true}
-            returnKeyType={"done"}
-            multiline={true}
-          />
-          <Divider />
-          <Text className={"text-lg"}>Total: ${totalPrice}</Text>
-          <View className={"flex-row"}>
-            <Button mode={"outlined"} onPress={reset} style={{ flex: 1 }}>
-              Limpiar
-            </Button>
-            <Button
-              mode={"contained"}
-              onPress={() => setModalVisible(true)}
-              style={{ flex: 2 }}
-            >
-              Continuar
-            </Button>
-          </View>
-        </View>
+        <ConfirmBottomBar
+          commentInputRef={commentInputRef}
+          comment={comment}
+          setComment={setComment}
+          setModalVisible={setModalVisible}
+          reset={reset}
+          totalPrice={totalPrice}
+        />
       </View>
     </PaperProvider>
   );
