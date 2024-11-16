@@ -1,22 +1,18 @@
 import { LegacyRef, useContext, useEffect, useRef, useState } from "react";
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  SectionList,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import Checkbox from "expo-checkbox";
+import { Modal, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Divider, IconButton, PaperProvider } from "react-native-paper";
+import { Button, Divider, PaperProvider } from "react-native-paper";
 import RadioGroup from "react-native-radio-buttons-group";
 import { useIsFocused } from "@react-navigation/core";
 
-import { Item, OrderToPlace, PaymentType, Table } from "@/types";
+import {
+  Item,
+  ItemById,
+  OrderToPlace,
+  PaymentType,
+  QuantityByItem,
+  Table,
+} from "@/types";
 import { Theme } from "@/constants/Colors";
 import {
   AlertContext,
@@ -26,60 +22,9 @@ import {
 } from "@/app/_layout";
 import { useApi } from "@/hooks/useApi";
 import "@/css/global.css";
-
-type BuyableItemProps = {
-  item: Item;
-  addItemToOrder: (item: Item, quantity: number) => void;
-  quantity: number;
-  className?: string;
-};
-const BuyableItem = ({
-  item,
-  addItemToOrder,
-  quantity,
-  className,
-  ...props
-}: BuyableItemProps) => {
-  return (
-    <View
-      className={
-        (className ? className + " " : "") + "flex-row items-center px-3 py-1"
-      }
-      {...props}
-    >
-      <View className={"flex-1"}>
-        <Text>{item.name}</Text>
-        <Text className={"text-neutral-500 text-sm"}>
-          ${item.price} | Quedan {item.remaining}
-        </Text>
-      </View>
-      <View>
-        <View className={"flex-row items-center"}>
-          <IconButton
-            size={10}
-            icon={"minus"}
-            mode={"contained-tonal"}
-            onPress={() => {
-              addItemToOrder(item, quantity - 1);
-            }}
-          />
-          <Text>{quantity}</Text>
-          <IconButton
-            size={10}
-            icon={"plus"}
-            mode={"contained-tonal"}
-            onPress={() => {
-              addItemToOrder(item, quantity + 1);
-            }}
-          />
-        </View>
-      </View>
-    </View>
-  );
-};
-
-type ItemById = { [id: number]: Item };
-type QuantityByItem = Map<Item, number>;
+import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
+import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
+import { BottomBar } from "@/components/BottomBar";
 
 type ConfirmOrderModalProps = {
   modalVisible: boolean;
@@ -181,90 +126,6 @@ const ConfirmOrderModal = ({
   );
 };
 
-type TableTopBarProps = {
-  currentTable: Table | null;
-  setCurrentTable: (table: Table) => void;
-};
-const TableTopBar = ({ currentTable, setCurrentTable }: TableTopBarProps) => {
-  const { tableRange } = useContext(WaiterContext) as WaiterContextType;
-  const isFocused = useIsFocused();
-  const { getTables } = useApi();
-
-  const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
-  const [tables, setTables] = useState<Table[]>([]);
-
-  useEffect(() => {
-    const retrieveTables = async () => {
-      let newTables: Table[] = await getTables();
-      newTables = newTables.map((table) => ({ number: table.number }));
-      setTables(newTables);
-      if (newTables && newTables.length > 0) {
-        if (tableRange.min)
-          setCurrentTable(
-            newTables.find((t) => t.number === tableRange.min) || newTables[0],
-          );
-        else setCurrentTable(newTables[0]);
-      }
-    };
-    retrieveTables().catch(console.error);
-  }, [isFocused]);
-
-  return (
-    <View className={"p-2 bg-white border-b border-b-neutral-500"}>
-      <View className={"flex-row items-center"}>
-        <Text className={"flex-1 text-xl font-bold"}>Mesa</Text>
-        <Pressable
-          className={"flex-row items-center"}
-          onPress={() => setEnableAllTables(!enableAllTables)}
-        >
-          <Checkbox
-            value={enableAllTables}
-            onValueChange={(value) => setEnableAllTables(value)}
-            style={{ width: 16, height: 16, borderWidth: 1 }}
-          />
-          <Text className={"ml-1 text-sm text-neutral-700"}>
-            Mostrar todas las mesas
-          </Text>
-        </Pressable>
-      </View>
-      <FlatList
-        horizontal={true}
-        data={
-          tableRange.min && tableRange.max && !enableAllTables
-            ? tables.filter(
-                (t) => t.number >= tableRange.min && t.number <= tableRange.max,
-              )
-            : tables
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className={
-              "m-0.5 w-10 h-10 items-center justify-center rounded " +
-              (currentTable?.number == item.number
-                ? "bg-yellow-800/80"
-                : "bg-yellow-800/40")
-            }
-            key={item.number}
-            onPress={() => {
-              setCurrentTable(item);
-            }}
-          >
-            <Text
-              className={
-                currentTable?.number == item.number
-                  ? "font-bold text-white"
-                  : ""
-              }
-            >
-              {item.number}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
-  );
-};
-
 type ConfirmBottomBarProps = {
   commentInputRef: LegacyRef<TextInput>;
   comment: string;
@@ -282,7 +143,7 @@ const ConfirmBottomBar = ({
   setModalVisible,
 }: ConfirmBottomBarProps) => {
   return (
-    <View className={"p-3 border-t border-t-neutral-500"}>
+    <BottomBar>
       <TextInput
         ref={commentInputRef}
         placeholder={"Agregar comentario"}
@@ -307,54 +168,7 @@ const ConfirmBottomBar = ({
           Continuar
         </Button>
       </View>
-    </View>
-  );
-};
-
-type FoodPickerProps = {
-  foods: Item[];
-  drinks: Item[];
-  foodToOrder: QuantityByItem;
-  drinksToOrder: QuantityByItem;
-  addItemToOrder: (item: Item, quantity: number) => void;
-};
-const FoodPicker = ({
-  foods,
-  drinks,
-  addItemToOrder,
-  foodToOrder,
-  drinksToOrder,
-}: FoodPickerProps) => {
-  const isItemFood = (item: Item) => {
-    return foods.includes(item);
-  };
-
-  return (
-    <SectionList
-      sections={[
-        { title: "Comida", data: foods },
-        { title: "Bebida", data: drinks },
-      ]}
-      keyExtractor={(item) => `${isItemFood(item) ? "F" : "D"}${item.id}`}
-      renderItem={({ item }) => (
-        <BuyableItem
-          key={item.id.toString()}
-          item={item}
-          quantity={
-            isItemFood(item)
-              ? foodToOrder.get(item) || 0
-              : drinksToOrder.get(item) || 0
-          }
-          addItemToOrder={addItemToOrder}
-        />
-      )}
-      renderSectionHeader={({ section: { title } }) => (
-        <Text className={"text-xl font-bold bg-[#f3f3f3DD] py-2 text-center"}>
-          {title}
-        </Text>
-      )}
-      ItemSeparatorComponent={Divider}
-    />
+    </BottomBar>
   );
 };
 
