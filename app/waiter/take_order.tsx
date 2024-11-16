@@ -313,6 +313,40 @@ const ConfirmBottomBar = ({
   );
 };
 
+type FoodPickerProps = {
+  foods: Item[];
+  drinks: Item[];
+  addItemToOrder: (item: Item, quantity: number) => void;
+};
+const FoodPicker = ({ foods, drinks, addItemToOrder }: FoodPickerProps) => {
+  const isItemFood = (item: Item) => {
+    return foods.includes(item);
+  };
+
+  return (
+    <SectionList
+      sections={[
+        { title: "Comida", data: foods },
+        { title: "Bebida", data: drinks },
+      ]}
+      keyExtractor={(item) => `${isItemFood(item) ? "F" : "D"}${item.id}`}
+      renderItem={({ item }) => (
+        <BuyableItem
+          key={item.id.toString()}
+          item={item}
+          addItemToOrder={addItemToOrder}
+        />
+      )}
+      renderSectionHeader={({ section: { title } }) => (
+        <Text className={"text-xl font-bold bg-[#f3f3f3DD] py-2 text-center"}>
+          {title}
+        </Text>
+      )}
+      ItemSeparatorComponent={Divider}
+    />
+  );
+};
+
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
@@ -459,35 +493,11 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
           currentTable={currentTable}
           setCurrentTable={setCurrentTable}
         />
-        <SectionList
-          sections={[
-            {
-              title: "Comida",
-              data: Object.values(foods),
-            },
-            {
-              title: "Bebida",
-              data: Object.values(drinks),
-            },
-          ]}
-          keyExtractor={(item) => `${isItemFood(item) ? "F" : "D"}${item.id}`}
-          renderItem={({ item }) => (
-            <BuyableItem
-              key={item.id.toString()}
-              item={item}
-              addItemToOrder={addItemToOrder}
-            />
-          )}
-          renderSectionHeader={({ section: { title } }) => (
-            <Text
-              className={"text-xl font-bold bg-[#f3f3f3DD] py-2 text-center"}
-            >
-              {title}
-            </Text>
-          )}
-          ItemSeparatorComponent={Divider}
+        <FoodPicker
+          foods={Object.values(foods)}
+          drinks={Object.values(drinks)}
+          addItemToOrder={addItemToOrder}
         />
-
         <ConfirmBottomBar
           commentInputRef={commentInputRef}
           comment={comment}
