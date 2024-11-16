@@ -136,7 +136,7 @@ const MyDrawer = () => {
         name={'cashier/orders/index'}
         options={{
           drawerLabel: "Ver pedidos",
-          title: "Pedidos",
+          title: "Pedidos (Caja)",
           drawerItemStyle: {display: userType == UserType.Cashier ? 'flex' : 'none'}
         }}
       />
@@ -144,7 +144,7 @@ const MyDrawer = () => {
         name={'chef/orders/index'}
         options={{
           drawerLabel: "Ver pedidos",
-          title: "Pedidos",
+          title: "Pedidos (Cocina)",
           drawerItemStyle: {display: userType == UserType.Chef ? 'flex' : 'none'},
         }}
       />
@@ -152,7 +152,7 @@ const MyDrawer = () => {
         name={'waiter/orders/index'}
         options={{
           drawerLabel: "Ver pedidos",
-          title: "Pedidos",
+          title: `Pedidos (${waiter ? waiter : 'Mozos'})`,
           drawerItemStyle: {display: userType == UserType.Waiter ? 'flex' : 'none'},
         }}
       />
@@ -164,11 +164,10 @@ const MyDrawer = () => {
             drawerItemStyle: {display: ((userType == UserType.Waiter) && waiter) ? 'flex' : 'none'},
           }}
       />
-      <Drawer.Screen name={'waiter/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
-      <Drawer.Screen name={'cashier/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
-      <Drawer.Screen name={'chef/orders/[id]'} options={{drawerItemStyle: {display: 'none'}}} />
+      <Drawer.Screen name={'waiter/orders/[id]'} options={{drawerItemStyle: {display: 'none'}, title: `Pedido`}} />
+      <Drawer.Screen name={'cashier/orders/[id]'} options={{drawerItemStyle: {display: 'none'}, title: `Pedido`}} />
+      <Drawer.Screen name={'chef/orders/[id]'} options={{drawerItemStyle: {display: 'none'}, title: `Pedido`}} />
     </Drawer>
-
   )
 }
 

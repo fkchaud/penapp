@@ -4,12 +4,10 @@ import {ActivityIndicator, PaperProvider} from "react-native-paper";
 import {Theme} from "@/constants/Colors";
 import {useEffect, useState} from "react";
 import {Order} from "@/types";
-import {SimpleGrid} from "react-native-super-grid";
-import {OrderCard} from "@/components/OrderCard";
-import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
 import {GetOrdersParams, useApi} from "@/hooks/useApi";
 import Checkbox from "expo-checkbox";
+import OrderMasonry from "@/components/OrderMasonry";
 
 
 const ChefOrders = () => {
@@ -50,22 +48,12 @@ const ChefOrders = () => {
     <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
-          <Text>Pedidos</Text>
           <View style={{flexDirection: 'row'}}>
             <Checkbox value={showAllOrders} onValueChange={(value) => setShowAllOrders(value)}/>
             <Text>Mostrar todas las ordenes</Text>
           </View>
           <View>
-            <SimpleGrid
-              listKey={'orders'}
-              itemDimension={140}
-              data={orders}
-              renderItem={({item}) => (
-                <Link href={{pathname: '/chef/orders/[id]', params: {id: item.id}}} key={item.id} style={{flexGrow: 1}}>
-                  <OrderCard order={item}/>
-                </Link>
-              )}
-            />
+            <OrderMasonry orders={orders} targetPath={'/chef/orders/[id]'} />
           </View>
         </ScrollView>
       </SafeAreaView>

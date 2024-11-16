@@ -1,5 +1,5 @@
 import {Chip} from "react-native-paper";
-import {Text, View, ViewStyle} from "react-native";
+import {StyleProp, Text, View, ViewStyle} from "react-native";
 
 import {Order, OrderStatus} from "@/types";
 import "@/css/global.css";
@@ -40,7 +40,7 @@ export const OrderCard = ({order, className, style, ...props}: { order: Order, c
         paddingHorizontal: 8,
         ...style
       }}
-      className={`m-0.5 rounded ${className ? className : ''}`}
+      className={`bg-white m-0.5 rounded ${className ? className : ''}`}
       {...props}
     >
       <Text>Comanda #{order.id}</Text>

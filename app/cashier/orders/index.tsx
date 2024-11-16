@@ -10,6 +10,7 @@ import {Link} from "expo-router";
 import {useIsFocused} from "@react-navigation/core";
 import {GetOrdersParams, useApi} from "@/hooks/useApi";
 import Checkbox from "expo-checkbox";
+import OrderMasonry from "@/components/OrderMasonry";
 
 
 const Orders = () => {
@@ -50,22 +51,12 @@ const Orders = () => {
     <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
-          <Text>Pedidos</Text>
           <View style={{flexDirection: 'row'}}>
             <Checkbox value={showAllOrders} onValueChange={(value) => setShowAllOrders(value)}/>
             <Text>Mostrar todas las ordenes</Text>
           </View>
           <View>
-            <SimpleGrid
-              listKey={'orders'}
-              itemDimension={140}
-              data={orders}
-              renderItem={({item}) => (
-                <Link href={{pathname: '/cashier/orders/[id]', params: {id: item.id}}} key={item.id} style={{flexGrow: 1}}>
-                  <OrderCard order={item}/>
-                </Link>
-              )}
-            />
+            <OrderMasonry orders={orders} targetPath={'/cashier/orders/[id]'} />
           </View>
         </ScrollView>
       </SafeAreaView>

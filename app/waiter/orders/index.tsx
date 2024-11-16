@@ -15,6 +15,7 @@ import {OrderCard} from "@/components/OrderCard";
 import {WaiterContext, WaiterContextType} from "@/app/_layout";
 import {useApi} from "@/hooks/useApi";
 import "@/css/global.css";
+import OrderMasonry from "@/components/OrderMasonry";
 
 
 const Orders = () => {
@@ -61,34 +62,12 @@ const Orders = () => {
             Tomar pedido
           </Button>
           <View>
-            <MasonryFlashList
-              numColumns={Math.floor(width/128)}
-              estimatedItemSize={180}
-              data={activeOrders()}
-              renderItem={({item}) => (
-                <TouchableOpacity
-                  onPress={() => router.push({ pathname: '/waiter/orders/[id]', params: { id: item.id } })}
-                  className={'w-full'}
-                  key={item.id}
-                >
-                  <OrderCard order={item}/>
-                </TouchableOpacity>
-              )}
-            />
+            <OrderMasonry orders={activeOrders()} targetPath={'/waiter/orders/[id]'} />
           </View>
           {inactiveOrders().length > 0 &&
             <View>
-              <Text>Pasadas:</Text>
-              <SimpleGrid
-                listKey={'inactive-orders'}
-                itemDimension={140}
-                data={inactiveOrders()}
-                renderItem={({item}) => (
-                  <Link href={{pathname: '/waiter/orders/[id]', params: {id: item.id}}} key={item.id} style={{flexGrow: 1}}>
-                    <OrderCard order={item} key={item.id}/>
-                  </Link>
-                )}
-              />
+              <Text className={'font-bold text-xl mt-4'}>Pasadas:</Text>
+              <OrderMasonry orders={inactiveOrders()} targetPath={'/waiter/orders/[id]'} inactive={true} />
             </View>
           }
         </ScrollView>
