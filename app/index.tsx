@@ -1,6 +1,6 @@
 import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {Button, HelperText, SegmentedButtons, TextInput} from "react-native-paper";
+import {HelperText, SegmentedButtons, TextInput} from "react-native-paper";
 import {useContext, useEffect, useState} from "react";
 import {Table, UserType, UserTypeByKey, Waiter} from "@/types";
 import {

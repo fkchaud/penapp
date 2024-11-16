@@ -52,6 +52,7 @@ export const OrderCard = ({order, className, style, ...props}: { order: Order, c
       {order.drinks.map(drinks => (
         <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
       ))}
+      {order.comment && <Text style={{fontStyle: 'italic'}}>{order.comment}</Text>}
       <Text>${order.total_price} - {PaymentMethodLabel[order.payment_type]}</Text>
       {order.last_status && <StatusLabel status={order.last_status.status}/>}
     </View>

@@ -1,10 +1,11 @@
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {
   FlatList,
   Modal,
   Pressable,
   SectionList,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -70,6 +71,8 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [comment, setComment] = useState('');
+  const commentInputRef = useRef<TextInput>(null);
 
   const [tables, setTables] = useState<Table[]>([]);
   const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
@@ -87,6 +90,7 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
       food: Object.entries(foodToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
       drinks: Object.entries(drinksToOrder).map(([id, quantity]) => ({id: Number(id), quantity})),
       payment_type: paymentMethod,
+      comment: comment,
     }
   }
 
@@ -247,7 +251,10 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
           </View>
         </View>
       </Modal>
-      <View className={'flex-1'}>
+      <View className={'flex-1'} onStartShouldSetResponder={e => {
+        commentInputRef.current?.blur();
+        return false;
+      }}>
         <View className={'p-2 bg-white border-b border-b-neutral-500'}>
           <View className={'flex-row items-center'}>
             <Text className={'flex-1 text-xl font-bold'}>Mesa</Text>
@@ -305,6 +312,17 @@ const InternalTakeOrder = ({reset}: {reset: () => void}) => {
         />
 
         <View className={'p-3 border-t border-t-neutral-500'}>
+          <TextInput
+            ref={commentInputRef}
+            placeholder={'Agregar comentario'}
+            value={comment}
+            onChangeText={setComment}
+            maxLength={150}
+            blurOnSubmit={true}
+            returnKeyType={'done'}
+            multiline={true}
+          />
+          <Divider />
           <Text className={'text-lg'}>Total: ${totalPrice}</Text>
           <View className={'flex-row'}>
             <Button mode={"outlined"} onPress={reset} style={{flex: 1}}>Limpiar</Button>

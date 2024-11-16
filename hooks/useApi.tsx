@@ -1,6 +1,6 @@
 import {Order, OrderStatus, OrderToPlace, Waiter} from "@/types";
 import {useContext} from "react";
-import {ServiceUrlContext, ServiceUrlContextType, UserTypeContext, UserTypeContextType} from "@/app/_layout";
+import {ServiceUrlContext, ServiceUrlContextType} from "@/app/_layout";
 
 
 export interface GetOrdersParams {

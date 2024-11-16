@@ -29,6 +29,7 @@ export type OrderToPlace = {
     quantity: number,
   }[],
   payment_type: PaymentType,
+  comment?: string,
 };
 
 type OrderedFood = {
@@ -53,6 +54,7 @@ export type Order = {
   };
   total_price: number,
   payment_type: PaymentType,
+  comment: string,
 }
 
 export enum UserType {
