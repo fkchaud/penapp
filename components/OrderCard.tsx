@@ -1,7 +1,9 @@
-import {Order, OrderStatus} from "@/types";
 import {Chip} from "react-native-paper";
-import {Text, View} from "react-native";
-import {Theme} from "@/constants/Colors";
+import {Text, View, ViewStyle} from "react-native";
+
+import {Order, OrderStatus} from "@/types";
+import "@/css/global.css";
+
 
 export const PaymentMethodLabel = {
   'CASH': 'Efectivo',
@@ -28,17 +30,19 @@ export const StatusLabel = ({status}: { status: OrderStatus }) => {
   )
 };
 
-export const OrderCard = ({order}: { order: Order }) => {
+export const OrderCard = ({order, className, style, ...props}: { order: Order, className?: string, style?: ViewStyle }) => {
   return (
-    <View style={{
-      height: "100%",
-      width: "100%",
-      backgroundColor: Theme.colors.background,
-      borderStyle: 'dashed',
-      borderWidth: 1,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-    }}>
+    <View
+      style={{
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        ...style
+      }}
+      className={`m-0.5 rounded ${className ? className : ''}`}
+      {...props}
+    >
       <Text>Comanda #{order.id}</Text>
       <Text>Mozo {order.waiter.name}</Text>
       <Text>Mesa {order.table.number}</Text>
