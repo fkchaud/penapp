@@ -16,10 +16,12 @@ import { TopBar } from "@/components/TopBar";
 type TableTopBarProps = {
   currentTable: Table | null;
   setCurrentTable: (table: Table) => void;
+  autoCurrentTable?: boolean;
 };
 export const TableTopBar = ({
   currentTable,
   setCurrentTable,
+  autoCurrentTable = true,
 }: TableTopBarProps) => {
   const { tableRange } = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
@@ -33,7 +35,7 @@ export const TableTopBar = ({
       let newTables: Table[] = await getTables();
       newTables = newTables.map((table) => ({ number: table.number }));
       setTables(newTables);
-      if (newTables && newTables.length > 0) {
+      if (newTables && newTables.length > 0 && autoCurrentTable) {
         if (tableRange.min)
           setCurrentTable(
             newTables.find((t) => t.number === tableRange.min) || newTables[0],
@@ -43,6 +45,15 @@ export const TableTopBar = ({
     };
     retrieveTables().catch(console.error);
   }, [isFocused]);
+
+  if (
+    currentTable &&
+    !enableAllTables &&
+    (currentTable.number < tableRange.min ||
+      currentTable.number > tableRange.max)
+  ) {
+    setEnableAllTables(true);
+  }
 
   return (
     <TopBar>

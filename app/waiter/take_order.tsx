@@ -1,8 +1,7 @@
-import { LegacyRef, useContext, useEffect, useRef, useState } from "react";
-import { Modal, Text, TextInput, View } from "react-native";
+import { useContext, useEffect, useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Divider, PaperProvider } from "react-native-paper";
-import RadioGroup from "react-native-radio-buttons-group";
+import { PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/core";
 
 import {
@@ -24,153 +23,8 @@ import { useApi } from "@/hooks/useApi";
 import "@/css/global.css";
 import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
-import { BottomBar } from "@/components/BottomBar";
-
-type ConfirmOrderModalProps = {
-  modalVisible: boolean;
-  setModalVisible: (visible: boolean) => void;
-  foodToOrder: QuantityByItem;
-  drinksToOrder: QuantityByItem;
-  totalPrice: number;
-  paymentMethod: PaymentType | "";
-  setPaymentMethod: (paymentMethod: PaymentType) => void;
-  onConfirm: () => void;
-};
-const ConfirmOrderModal = ({
-  modalVisible,
-  setModalVisible,
-  foodToOrder,
-  drinksToOrder,
-  totalPrice,
-  paymentMethod,
-  setPaymentMethod,
-  onConfirm,
-}: ConfirmOrderModalProps) => {
-  return (
-    <Modal
-      visible={modalVisible}
-      onDismiss={() => setModalVisible(false)}
-      onRequestClose={() => setModalVisible(false)}
-      transparent={true}
-      animationType={"fade"}
-    >
-      <View className={"flex-1 justify-center items-center bg-black/25"}>
-        <View className={"align-middle bg-white p-6 shadow w-5/6"}>
-          <View className={"align-middle"}>
-            <Text className={"font-bold"}>Su pedido:</Text>
-            {[...foodToOrder.entries()].map(([food, qty]) => (
-              <Text key={food.id.toString()}>
-                {qty}x {food.name}
-              </Text>
-            ))}
-            {[...drinksToOrder.entries()].map(([drink, qty]) => (
-              <Text key={drink.id.toString()}>
-                {qty}x {drink.name}
-              </Text>
-            ))}
-            <Text>
-              <Text className={"font-bold"}>A pagar:</Text> ${totalPrice}
-            </Text>
-            <Text> </Text>
-            <Text className={"mb-2"}>Seleccione medio de pago:</Text>
-            <RadioGroup
-              radioButtons={[
-                {
-                  id: "CASH",
-                  label: "Efectivo",
-                  value: "CASH",
-                  borderSize: 1.5,
-                  borderColor: "#909090",
-                  size: 16,
-                },
-                {
-                  id: "TRANSFER",
-                  label: "Transferencia",
-                  value: "TRANSFER",
-                  borderSize: 1.5,
-                  borderColor: "#909090",
-                  size: 16,
-                },
-              ]}
-              onPress={(selectedId) =>
-                setPaymentMethod(selectedId as PaymentType)
-              }
-              selectedId={paymentMethod}
-              containerStyle={{ alignItems: "flex-start" }}
-            />
-            {paymentMethod === "TRANSFER" && (
-              <Text>Alias: seminario.mendoza</Text>
-            )}
-            <Text> </Text>
-          </View>
-          <View>
-            <Button
-              compact={true}
-              mode={"contained"}
-              disabled={!paymentMethod}
-              onPress={onConfirm}
-            >
-              Confirmar comanda
-            </Button>
-            <Button
-              compact={true}
-              mode={"outlined"}
-              onPress={() => setModalVisible(false)}
-            >
-              Cancelar
-            </Button>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-};
-
-type ConfirmBottomBarProps = {
-  commentInputRef: LegacyRef<TextInput>;
-  comment: string;
-  setComment: (comment: string) => void;
-  totalPrice: number;
-  reset: () => void;
-  setModalVisible: (visible: boolean) => void;
-};
-const ConfirmBottomBar = ({
-  commentInputRef,
-  comment,
-  setComment,
-  totalPrice,
-  reset,
-  setModalVisible,
-}: ConfirmBottomBarProps) => {
-  return (
-    <BottomBar>
-      <TextInput
-        ref={commentInputRef}
-        placeholder={"Agregar comentario"}
-        value={comment}
-        onChangeText={setComment}
-        maxLength={150}
-        blurOnSubmit={true}
-        returnKeyType={"done"}
-        multiline={true}
-      />
-      <Divider />
-      <Text className={"text-lg"}>Total: ${totalPrice}</Text>
-      <View className={"flex-row"}>
-        <Button mode={"outlined"} onPress={reset} style={{ flex: 1 }}>
-          Limpiar
-        </Button>
-        <Button
-          mode={"contained"}
-          onPress={() => setModalVisible(true)}
-          style={{ flex: 2 }}
-        >
-          Continuar
-        </Button>
-      </View>
-    </BottomBar>
-  );
-};
+import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
+import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
 
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -207,10 +61,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       payment_type: paymentMethod,
       comment: comment,
     };
-  };
-
-  const isItemFood = (item: Item) => {
-    return Object.values(foods).includes(item);
   };
 
   // Get foods and drinks every time the screen is focused
@@ -276,10 +126,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   useEffect(() => {
     recalculatePrice(foodToOrder, drinksToOrder);
   }, [foodToOrder, drinksToOrder]);
-  const addItemToOrder = (item: Item, quantity: number) => {
-    if (isItemFood(item)) return addFoodToOrder(item, quantity);
-    return addDrinkToOrder(item, quantity);
-  };
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentType | "">("");
@@ -323,15 +169,17 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
           drinks={Object.values(drinks)}
           foodToOrder={foodToOrder}
           drinksToOrder={drinksToOrder}
-          addItemToOrder={addItemToOrder}
+          addFoodToOrder={addFoodToOrder}
+          addDrinksToOrder={addDrinkToOrder}
         />
         <ConfirmBottomBar
           commentInputRef={commentInputRef}
           comment={comment}
           setComment={setComment}
-          setModalVisible={setModalVisible}
-          reset={reset}
           totalPrice={totalPrice}
+          cancelText={"Limpiar"}
+          onCancel={reset}
+          onContinue={() => setModalVisible(true)}
         />
       </View>
     </PaperProvider>

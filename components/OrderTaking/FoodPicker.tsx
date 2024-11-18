@@ -57,18 +57,23 @@ type FoodPickerProps = {
   drinks: Item[];
   foodToOrder: QuantityByItem;
   drinksToOrder: QuantityByItem;
-  addItemToOrder: (item: Item, quantity: number) => void;
+  addFoodToOrder: (item: Item, quantity: number) => void;
+  addDrinksToOrder: (item: Item, quantity: number) => void;
 };
 export const FoodPicker = ({
   foods,
   drinks,
-  addItemToOrder,
+  addFoodToOrder,
+  addDrinksToOrder,
   foodToOrder,
   drinksToOrder,
 }: FoodPickerProps) => {
-  const isItemFood = (item: Item) => {
-    return foods.includes(item);
-  };
+  const foodToOrderObj: { [id: number]: number } = Object.fromEntries(
+    [...foodToOrder.entries()].map(([item, qty]) => [item.id, qty]),
+  );
+  const drinksToOrderObj: { [id: number]: number } = Object.fromEntries(
+    [...drinksToOrder.entries()].map(([item, qty]) => [item.id, qty]),
+  );
 
   return (
     <SectionList
@@ -76,17 +81,18 @@ export const FoodPicker = ({
         { title: "Comida", data: foods },
         { title: "Bebida", data: drinks },
       ]}
-      keyExtractor={(item) => `${isItemFood(item) ? "F" : "D"}${item.id}`}
-      renderItem={({ item }) => (
+      renderItem={({ item, section }) => (
         <BuyableItem
-          key={item.id.toString()}
+          key={`${section.title === "Comida" ? "F" : "D"}${item.id}`}
           item={item}
           quantity={
-            isItemFood(item)
-              ? foodToOrder.get(item) || 0
-              : drinksToOrder.get(item) || 0
+            section.title === "Comida"
+              ? foodToOrder.get(item) || foodToOrderObj[item.id] || 0
+              : drinksToOrder.get(item) || drinksToOrderObj[item.id] || 0
           }
-          addItemToOrder={addItemToOrder}
+          addItemToOrder={
+            section.title === "Comida" ? addFoodToOrder : addDrinksToOrder
+          }
         />
       )}
       renderSectionHeader={({ section: { title } }) => (
