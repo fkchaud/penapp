@@ -1,67 +1,66 @@
-import {ScrollView, Text, View} from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
-import {ActivityIndicator, PaperProvider} from "react-native-paper";
-import {Theme} from "@/constants/Colors";
-import {useEffect, useState} from "react";
-import {Order} from "@/types";
-import {SimpleGrid} from "react-native-super-grid";
-import {OrderCard} from "@/components/OrderCard";
-import {Link} from "expo-router";
-import {useIsFocused} from "@react-navigation/core";
-import {GetOrdersParams, useApi} from "@/hooks/useApi";
+import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, PaperProvider } from "react-native-paper";
+import { Theme } from "@/constants/Colors";
+import { useEffect, useState } from "react";
+import { Order } from "@/types";
+import { useIsFocused } from "@react-navigation/core";
+import { GetOrdersParams, useApi } from "@/hooks/useApi";
 import Checkbox from "expo-checkbox";
 import OrderMasonry from "@/components/OrderMasonry";
 
-
 const Orders = () => {
   const isFocused = useIsFocused();
-  const {getOrders} = useApi();
+  const { getOrders } = useApi();
 
   const [time, setTime] = useState(Date.now());
+  let interval: NodeJS.Timeout;
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(Date.now()), 5000);
+    clearInterval(interval);
+    if (isFocused) interval = setInterval(() => setTime(Date.now()), 5000);
+
     return () => {
       clearInterval(interval);
     };
   }, [isFocused]);
 
-  const [showAllOrders, setShowAllOrders] = useState<boolean>(false)
+  const [showAllOrders, setShowAllOrders] = useState<boolean>(false);
 
   const [orders, setOrders] = useState<Order[] | null>(null);
 
   useEffect(() => {
     const retrieve = async () => {
       const params: GetOrdersParams = {};
-      if (!showAllOrders)
-        params.status = 'PLACED';
+      if (!showAllOrders) params.status = "PLACED";
       const newOrders = await getOrders(params);
       setOrders(newOrders || []);
     };
-    retrieve()
-      .catch(console.error);
-  }, [isFocused, time, showAllOrders])
-
+    retrieve().catch(console.error);
+  }, [isFocused, time, showAllOrders]);
 
   if (!orders) {
-    return <ActivityIndicator size='large'/>;
+    return <ActivityIndicator size="large" />;
   }
 
   return (
     <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
-          <View style={{flexDirection: 'row'}}>
-            <Checkbox value={showAllOrders} onValueChange={(value) => setShowAllOrders(value)}/>
+          <View style={{ flexDirection: "row" }}>
+            <Checkbox
+              value={showAllOrders}
+              onValueChange={(value) => setShowAllOrders(value)}
+            />
             <Text>Mostrar todas las ordenes</Text>
           </View>
           <View>
-            <OrderMasonry orders={orders} targetPath={'/cashier/orders/[id]'} />
+            <OrderMasonry orders={orders} targetPath={"/cashier/orders/[id]"} />
           </View>
         </ScrollView>
       </SafeAreaView>
     </PaperProvider>
   );
-}
+};
 
 export default Orders;
