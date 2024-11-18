@@ -45,6 +45,7 @@ const WaiterOrderView = () => {
               - {drinks.quantity}x {drinks.drink.name}
             </Text>
           ))}
+          {order.comment && <Text className={"italic"}>{order.comment}</Text>}
           <Text>
             ${order.total_price} - {PaymentMethodLabel[order.payment_type]}
           </Text>

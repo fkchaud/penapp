@@ -1,4 +1,4 @@
-import { Order, OrderStatus, OrderToPlace, Waiter } from "@/types";
+import { Item, Order, OrderStatus, OrderToPlace, Waiter } from "@/types";
 import { useContext } from "react";
 import { ServiceUrlContext, ServiceUrlContextType } from "@/app/_layout";
 
@@ -32,12 +32,12 @@ export const useApi = () => {
     return await getAny(url);
   };
 
-  const getFoods = async () => {
+  const getFoods = async (): Promise<Item[]> => {
     const url = serviceUrl + "foods/";
     return await getAny(url);
   };
 
-  const getDrinks = async () => {
+  const getDrinks = async (): Promise<Item[]> => {
     const url = serviceUrl + "drinks/";
     return await getAny(url);
   };
@@ -81,10 +81,10 @@ export const useApi = () => {
   };
 
   const updateOrder = async (orderId: number | string, order: OrderToPlace) => {
-    const url = serviceUrl + `orders/${orderId}`;
+    const url = serviceUrl + `orders/${orderId}/`;
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify(order),
         headers: { "Content-Type": "application/json" },
       });

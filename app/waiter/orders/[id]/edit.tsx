@@ -24,7 +24,6 @@ import {
 } from "@/app/_layout";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
-import RadioGroup from "react-native-radio-buttons-group";
 
 const InternalEditOrder = () => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -91,34 +90,26 @@ const InternalEditOrder = () => {
     setTotalPrice(price);
   };
 
-  useEffect(() => {
-    const retrieveOrder = async () => {
-      const newOrder = await getOrder(id);
-      setOrder(newOrder);
-    };
-    retrieveOrder().catch(console.error);
-  }, [isFocused]);
-
   // Get foods and drinks every time the screen is focused
   useEffect(() => {
     const processStuff = async () => {
       const retrieveFoods = async () => {
         const newFoods = await getFoods();
-        setFoods(
-          newFoods.reduce((acc: ItemById, f: Item) => {
-            acc[f.id] = f;
-            return acc;
-          }, {}),
-        );
+        const foodsToSet = newFoods.reduce((acc: ItemById, f: Item) => {
+          acc[f.id] = f;
+          return acc;
+        }, {});
+        setFoods(foodsToSet);
+        return foodsToSet;
       };
       const retrieveDrinks = async () => {
         const newDrinks = await getDrinks();
-        setDrinks(
-          newDrinks.reduce((acc: ItemById, d: Item) => {
-            acc[d.id] = d;
-            return acc;
-          }, {}),
-        );
+        const drinksToSet = newDrinks.reduce((acc: ItemById, d: Item) => {
+          acc[d.id] = d;
+          return acc;
+        }, {});
+        setDrinks(drinksToSet);
+        return drinksToSet;
       };
       const retrieveOrder = async () => {
         return await getOrder(id);
@@ -128,23 +119,34 @@ const InternalEditOrder = () => {
       const promiseDrinks = retrieveDrinks().catch(console.error);
       const promiseOrder = retrieveOrder().catch(console.error);
 
-      await Promise.all([promiseFood, promiseDrinks]);
-
-      promiseOrder.then((ord) => {
-        if (!ord) return;
-        setOrder(ord);
-        const newFoodToOrder = new Map(
-          ord.foods.map((ordFood) => [ordFood.food, ordFood.quantity]),
-        );
-        setFoodToOrder(newFoodToOrder);
-        const newDrinksToOrder = new Map(
-          ord.drinks.map((ordDrink) => [ordDrink.drink, ordDrink.quantity]),
-        );
-        setDrinksToOrder(newDrinksToOrder);
-        console.log(newFoodToOrder, newDrinksToOrder);
-        setComment(ord.comment);
-        setCurrentTable(ord.table);
-      });
+      await Promise.all([promiseFood, promiseDrinks]).then(
+        ([newFoods, newDrinks]) => {
+          promiseOrder.then((ord) => {
+            if (!ord) return;
+            setOrder(ord);
+            const newFoodToOrder = new Map(
+              ord.foods.map((ordFood) => {
+                if (newFoods)
+                  return [newFoods[ordFood.food.id], ordFood.quantity];
+                else return [ordFood.food, ordFood.quantity];
+              }),
+            );
+            setFoodToOrder(newFoodToOrder);
+            const newDrinksToOrder = new Map(
+              ord.drinks.map((ordDrink) => {
+                if (newDrinks)
+                  return [newDrinks[ordDrink.drink.id], ordDrink.quantity];
+                else return [ordDrink.drink, ordDrink.quantity];
+              }),
+            );
+            setDrinksToOrder(newDrinksToOrder);
+            console.log(newFoodToOrder, newDrinksToOrder);
+            setComment(ord.comment);
+            setCurrentTable(ord.table);
+            setPaymentMethod(ord.payment_type);
+          });
+        },
+      );
     };
     processStuff();
   }, [isFocused]);
