@@ -1,5 +1,5 @@
 import { Chip } from "react-native-paper";
-import { StyleProp, Text, View, ViewStyle } from "react-native";
+import { Text, View, ViewStyle } from "react-native";
 
 import { Order, OrderStatus } from "@/types";
 import "@/css/global.css";
