@@ -1,4 +1,4 @@
-import { Chip } from "react-native-paper";
+import { Chip, Icon } from "react-native-paper";
 import { Text, View, ViewStyle } from "react-native";
 
 import { Order, OrderStatus } from "@/types";
@@ -8,6 +8,36 @@ export const PaymentMethodLabel = {
   CASH: "Efectivo",
   TRANSFER: "Transferencia",
   MERCADOPAGO: "Mercado Pago",
+};
+export const PaymentMethodIcon = {
+  CASH: { name: "cash", lightColor: "black", darkColor: "white" },
+  TRANSFER: { name: "bank-transfer", lightColor: "black", darkColor: "white" },
+  MERCADOPAGO: {
+    name: "handshake-outline",
+    lightColor: "black",
+    darkColor: "white",
+  },
+};
+const StatusLabels: Record<
+  OrderStatus,
+  { text: string; className: string; isDark: boolean }
+> = {
+  PLACED: { text: "Tomado", className: "bg-gray-200/75", isDark: false },
+  ACCEPTED: { text: "Aprobado", className: "bg-yellow-200/50", isDark: false },
+  REJECTED: { text: "Rechazado", className: "bg-red-200", isDark: true },
+  PREPARED: { text: "Preparado", className: "bg-green-500/15", isDark: false },
+  PREPARING: {
+    text: "Preparando",
+    className: "bg-yellow-200/50",
+    isDark: false,
+  },
+  PICKED_UP: { text: "Recogido", className: "bg-green-200/20", isDark: false },
+  DELIVERED: { text: "Entregado", className: "bg-green-500/25", isDark: false },
+  CANCELED: {
+    text: "Cancelado",
+    className: "bg-black text-white",
+    isDark: true,
+  },
 };
 
 export const StatusLabel = ({ status }: { status: OrderStatus }) => {
@@ -44,38 +74,80 @@ export const OrderCard = ({
   className?: string;
   style?: ViewStyle;
 }) => {
+  const statusLabel = StatusLabels[order.last_status.status];
+  const paymentMethodIcon = PaymentMethodIcon[order.payment_type];
+
   return (
     <View
-      style={{
-        borderStyle: "dashed",
-        borderWidth: 1,
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-        ...style,
-      }}
-      className={`bg-white m-0.5 rounded ${className ? className : ""}`}
+      style={{ ...style }}
+      className={`bg-green bg-white m-0.5 rounded-lg overflow-hidden border border-black/65 shadow ${className ? className : ""}`}
       {...props}
     >
-      <Text>Comanda #{order.id}</Text>
-      <Text>Mozo {order.waiter.name}</Text>
-      <Text>Mesa {order.table.number}</Text>
-      {order.foods.map((food) => (
-        <Text key={food.food.id}>
-          - {food.quantity}x {food.food.name}
-        </Text>
-      ))}
-      {order.drinks.map((drinks) => (
-        <Text key={drinks.drink.id}>
-          - {drinks.quantity}x {drinks.drink.name}
-        </Text>
-      ))}
-      {order.comment && (
-        <Text style={{ fontStyle: "italic" }}>{order.comment}</Text>
-      )}
-      <Text>
-        ${order.total_price} - {PaymentMethodLabel[order.payment_type]}
-      </Text>
-      {order.last_status && <StatusLabel status={order.last_status.status} />}
+      <View className={"flex-row border-b border-b-yellow-800/75"}>
+        <View
+          className={
+            "py-0.5 px-1 border-r border-r-yellow-800/5 bg-yellow-800/20"
+          }
+        >
+          <Text className={"font-bold"}>#{order.id}</Text>
+        </View>
+        <View className={"py-0.5 px-1 flex-1 items-center bg-yellow-800/30"}>
+          <Text>{order.waiter.name}</Text>
+        </View>
+        <View
+          className={
+            "py-0.5 px-1 border-l border-l-yellow-800/5 bg-yellow-800/40"
+          }
+        >
+          <Text>M{order.table.number}</Text>
+        </View>
+      </View>
+      <View>
+        <View className={"pt-1 pb-0.5 px-1 bg-cyan-300/20"}>
+          {order.foods.map((food) => (
+            <Text key={food.food.id}>
+              - {food.quantity}x {food.food.name}
+            </Text>
+          ))}
+        </View>
+        <View className={"pt-0.5 pb-1 px-1 bg-cyan-300/30"}>
+          {order.drinks.map((drinks) => (
+            <Text key={drinks.drink.id}>
+              - {drinks.quantity}x {drinks.drink.name}
+            </Text>
+          ))}
+        </View>
+      </View>
+      <View
+        className={`py-1 px-1 border-t border-t-cyan-800/60 ${statusLabel?.className || ""}`}
+      >
+        {order.comment && (
+          <Text className={"italic text-inherit"}>{order.comment}</Text>
+        )}
+        <View className={"flex-row align-middle"}>
+          <View>
+            <Text className={"text-inherit"}>${order.total_price}</Text>
+          </View>
+          {paymentMethodIcon && (
+            <View>
+              <Icon
+                size={18}
+                source={paymentMethodIcon.name}
+                color={
+                  statusLabel?.isDark || false
+                    ? paymentMethodIcon.darkColor
+                    : paymentMethodIcon.lightColor
+                }
+              />
+            </View>
+          )}
+          <View className={"flex-1"}>
+            <Text className={"text-right text-inherit"}>
+              {order.last_status && statusLabel?.text}
+            </Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 };

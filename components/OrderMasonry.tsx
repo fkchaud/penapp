@@ -56,7 +56,7 @@ const OrderMasonry = ({
             order={item}
             key={item.id}
             className={
-              (inactive ? "opacity-60" : "") + " " + (orderCardClassName || "")
+              (inactive ? "opacity-50" : "") + " " + (orderCardClassName || "")
             }
             style={{ ...orderCardStyle }}
           />
