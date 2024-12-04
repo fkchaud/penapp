@@ -11,8 +11,8 @@ import { Theme } from "@/constants/Colors";
 import { Order } from "@/types";
 import { WaiterContext, WaiterContextType } from "@/app/_layout";
 import { useApi } from "@/hooks/useApi";
-import "@/css/global.css";
 import OrderMasonry from "@/components/OrderMasonry";
+import "@/css/global.css";
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[] | null>(null);
@@ -48,13 +48,13 @@ const Orders = () => {
 
   const activeOrders = () =>
     orders.filter((o) =>
-      ["PLACED", "ACCEPTED", "PICKED_UP", "REJECTED"].includes(
+      ["PLACED", "ACCEPTED", "PREPARING", "PREPARED", "PICKED_UP"].includes(
         o.last_status.status,
       ),
     );
   const inactiveOrders = () =>
     orders.filter((o) =>
-      ["DELIVERED", "CANCELED"].includes(o.last_status.status),
+      ["REJECTED", "DELIVERED", "CANCELED"].includes(o.last_status.status),
     );
 
   return (
