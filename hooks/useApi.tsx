@@ -4,7 +4,7 @@ import { ServiceUrlContext, ServiceUrlContextType } from "@/app/_layout";
 
 export interface GetOrdersParams {
   waiter?: string;
-  status?: OrderStatus;
+  status?: OrderStatus | OrderStatus[];
 }
 
 export const useApi = () => {
@@ -47,7 +47,10 @@ export const useApi = () => {
     if (waiter || status) {
       url += "?";
       if (waiter) url += `waiter=${waiter}`;
-      if (status) url += `status=${status}`;
+      if (status) {
+        if (Array.isArray(status)) url += `status=${status.join(",")}`;
+        else url += `status=${status}`;
+      }
     }
     return await getAny(url);
   };
@@ -106,16 +109,30 @@ export const useApi = () => {
   interface UpdateOrderStatusParams {
     orderId: number | string;
     orderStatus: OrderStatus;
+    areFoodReady?: boolean;
+    areDrinksReady?: boolean;
+  }
+  interface UpdateOrderStatusApiParams {
+    status: OrderStatus;
+    are_food_ready?: boolean;
+    are_drinks_ready?: boolean;
   }
   const updateOrderStatus = async ({
     orderId,
     orderStatus,
+    areFoodReady,
+    areDrinksReady,
   }: UpdateOrderStatusParams) => {
     const url = serviceUrl + `orders/${orderId}/update_status`;
+
+    const body: UpdateOrderStatusApiParams = { status: orderStatus };
+    if (areFoodReady) body.are_food_ready = areFoodReady;
+    if (areDrinksReady) body.are_drinks_ready = areDrinksReady;
+
     try {
       const response = await fetch(url, {
         method: "POST",
-        body: JSON.stringify({ status: orderStatus }),
+        body: JSON.stringify(body),
         headers: { "Content-Type": "application/json" },
       });
       return await response.json();

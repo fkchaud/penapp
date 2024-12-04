@@ -2,6 +2,8 @@ export type OrderStatus =
   | "PLACED"
   | "ACCEPTED"
   | "REJECTED"
+  | "PREPARING"
+  | "PREPARED"
   | "PICKED_UP"
   | "DELIVERED"
   | "CANCELED";
@@ -52,7 +54,9 @@ export type Order = {
   id: number;
   waiter: Waiter;
   foods: OrderedFood[];
+  are_food_ready: boolean;
   drinks: OrderedDrinks[];
+  are_drinks_ready: boolean;
   table: Table;
   last_status: {
     status: OrderStatus;

@@ -32,7 +32,7 @@ const ChefOrders = () => {
   useEffect(() => {
     const retrieve = async () => {
       const params: GetOrdersParams = {};
-      if (!showAllOrders) params.status = "ACCEPTED";
+      if (!showAllOrders) params.status = ["ACCEPTED", "PREPARING"];
       const newOrders = await getOrders(params);
       setOrders(newOrders || []);
     };
