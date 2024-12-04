@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { Order } from "@/types";
 import { useIsFocused } from "@react-navigation/core";
 import { GetOrdersParams, useApi } from "@/hooks/useApi";
-import Checkbox from "expo-checkbox";
 import OrderMasonry from "@/components/OrderMasonry";
 
 const Orders = () => {
@@ -25,38 +24,56 @@ const Orders = () => {
     };
   }, [isFocused]);
 
-  const [showAllOrders, setShowAllOrders] = useState<boolean>(false);
-
   const [orders, setOrders] = useState<Order[] | null>(null);
 
   useEffect(() => {
     const retrieve = async () => {
       const params: GetOrdersParams = {};
-      if (!showAllOrders) params.status = "PLACED";
       const newOrders = await getOrders(params);
       setOrders(newOrders || []);
     };
     retrieve().catch(console.error);
-  }, [isFocused, time, showAllOrders]);
+  }, [isFocused, time]);
 
   if (!orders) {
     return <ActivityIndicator size="large" />;
   }
 
+  const activeOrders = () =>
+    orders.filter((o) => ["PLACED"].includes(o.last_status.status));
+  const inactiveOrders = () =>
+    orders.filter((o) =>
+      [
+        "ACCEPTED",
+        "PREPARING",
+        "PREPARED",
+        "PICKED_UP",
+        "REJECTED",
+        "DELIVERED",
+        "CANCELED",
+      ].includes(o.last_status.status),
+    );
+
   return (
     <PaperProvider theme={Theme}>
       <SafeAreaView>
         <ScrollView>
-          <View style={{ flexDirection: "row" }}>
-            <Checkbox
-              value={showAllOrders}
-              onValueChange={(value) => setShowAllOrders(value)}
-            />
-            <Text>Mostrar todas las ordenes</Text>
-          </View>
           <View>
-            <OrderMasonry orders={orders} targetPath={"/cashier/orders/[id]"} />
+            <OrderMasonry
+              orders={activeOrders()}
+              targetPath={"/cashier/orders/[id]"}
+            />
           </View>
+          {inactiveOrders().length > 0 && (
+            <View>
+              <Text className={"font-bold text-xl mt-4"}>Pasadas:</Text>
+              <OrderMasonry
+                orders={inactiveOrders()}
+                targetPath={"/cashier/orders/[id]"}
+                inactive={true}
+              />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </PaperProvider>
