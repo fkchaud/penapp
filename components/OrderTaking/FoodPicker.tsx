@@ -15,11 +15,11 @@ const BuyableItem = ({
   className,
   ...props
 }: BuyableItemProps) => {
+  const disabled = item.remaining <= 0;
+
   return (
     <View
-      className={
-        (className ? className + " " : "") + "flex-row items-center px-3 py-1"
-      }
+      className={`${className || ""} ${disabled ? "opacity-50" : ""} flex-row items-center px-3 py-1`}
       {...props}
     >
       <View className={"flex-1"}>
@@ -37,6 +37,7 @@ const BuyableItem = ({
             onPress={() => {
               addItemToOrder(item, quantity - 1);
             }}
+            disabled={disabled}
           />
           <Text>{quantity}</Text>
           <IconButton
@@ -46,6 +47,7 @@ const BuyableItem = ({
             onPress={() => {
               addItemToOrder(item, quantity + 1);
             }}
+            disabled={disabled || quantity + 1 > item.remaining}
           />
         </View>
       </View>
