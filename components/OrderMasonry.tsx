@@ -1,10 +1,10 @@
-import { Dimensions, TouchableOpacity, ViewStyle } from "react-native";
+import { TouchableOpacity, useWindowDimensions, ViewStyle } from "react-native";
 
 import { useRouter } from "expo-router";
 
 import { OrderCard } from "@/components/OrderCard";
-import { MasonryFlashList } from "@shopify/flash-list";
 import { Order } from "@/types";
+import StaggeredList from "@mindinventory/react-native-stagger-view";
 
 type ValidPaths =
   | "/cashier/orders/[id]"
@@ -15,10 +15,10 @@ type Props = {
   targetPath: ValidPaths;
   maxWidth?: number;
   inactive?: boolean;
-  masonryFlashListClassName?: string;
+  className?: string;
   touchableOpacityClassName?: string;
   orderCardClassName?: string;
-  masonryFlashStyle?: ViewStyle;
+  style?: ViewStyle;
   touchableOpacityStyle?: ViewStyle;
   orderCardStyle?: ViewStyle;
 };
@@ -26,44 +26,42 @@ type Props = {
 const OrderMasonry = ({
   orders,
   targetPath,
-  maxWidth = 148,
+  maxWidth = 180,
   inactive = false,
-  masonryFlashListClassName,
+  className,
   touchableOpacityClassName,
   orderCardClassName,
-  masonryFlashStyle,
+  style,
   touchableOpacityStyle,
   orderCardStyle,
 }: Props) => {
   const router = useRouter();
-  const { width } = Dimensions.get("window");
+  const { width: screenWidth } = useWindowDimensions();
 
   return (
-    <MasonryFlashList
-      numColumns={Math.floor(width / maxWidth)}
-      estimatedItemSize={1000}
+    <StaggeredList
+      className={`${className}`}
+      style={{ ...style }}
+      animationType={"SLIDE_LEFT"}
+      numColumns={Math.floor(screenWidth / maxWidth)}
       data={orders}
       renderItem={({ item }) => (
         <TouchableOpacity
           onPress={() =>
             router.push({ pathname: targetPath, params: { id: item.id } })
           }
-          className={"w-full " + (touchableOpacityClassName || "")}
+          className={`w-44 my-1.5 ${touchableOpacityClassName || ""}`}
           key={item.id}
           style={{ ...touchableOpacityStyle }}
         >
           <OrderCard
             order={item}
             key={item.id}
-            className={
-              (inactive ? "opacity-50" : "") + " " + (orderCardClassName || "")
-            }
+            className={`h-full ${inactive ? "opacity-50" : ""} ${orderCardClassName || ""}`}
             style={{ ...orderCardStyle }}
           />
         </TouchableOpacity>
       )}
-      className={masonryFlashListClassName || ""}
-      style={{ ...masonryFlashStyle }}
     />
   );
 };

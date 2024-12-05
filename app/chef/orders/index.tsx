@@ -1,9 +1,9 @@
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
 import { Theme } from "@/constants/Colors";
 import { useEffect, useState } from "react";
-import { Order } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import { useIsFocused } from "@react-navigation/core";
 import { GetOrdersParams, useApi } from "@/hooks/useApi";
 import OrderMasonry from "@/components/OrderMasonry";
@@ -13,6 +13,7 @@ const ChefOrders = () => {
   const { getOrders } = useApi();
 
   const [orders, setOrders] = useState<Order[] | null>(null);
+  const [hideInactive, setHideInactive] = useState(true);
 
   const retrieve = async () => {
     const params: GetOrdersParams = {};
@@ -27,6 +28,8 @@ const ChefOrders = () => {
     return <ActivityIndicator size="large" />;
   }
 
+  const filterOrders = (statuses: OrderStatus[]) =>
+    orders.filter((o) => statuses.includes(o.last_status.status));
   const activeOrders = () =>
     orders.filter((o) =>
       ["ACCEPTED", "PREPARING", "PREPARED"].includes(o.last_status.status),
@@ -39,28 +42,27 @@ const ChefOrders = () => {
     );
 
   return (
-    <PaperProvider theme={Theme}>
-      <SafeAreaView>
-        <ScrollView>
-          <View>
-            <OrderMasonry
-              orders={activeOrders()}
-              targetPath={"/chef/orders/[id]"}
-            />
-          </View>
-          {inactiveOrders().length > 0 && (
-            <View>
-              <Text className={"font-bold text-xl mt-4"}>Pasadas:</Text>
-              <OrderMasonry
-                orders={inactiveOrders()}
-                targetPath={"/chef/orders/[id]"}
-                inactive={true}
-              />
-            </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </PaperProvider>
+    <View className={"flex-1"}>
+      <View className={"flex-1"}>
+        <OrderMasonry
+          orders={activeOrders()}
+          targetPath={"/chef/orders/[id]"}
+        />
+      </View>
+      {inactiveOrders().length > 0 && (
+        <View className={`${hideInactive ? "" : "flex-1"}`}>
+          <TouchableOpacity onPress={() => setHideInactive(!hideInactive)}>
+            <Text className={"font-bold text-xl my-4"}>Pasadas:</Text>
+          </TouchableOpacity>
+          <OrderMasonry
+            orders={inactiveOrders()}
+            targetPath={"/chef/orders/[id]"}
+            inactive={true}
+            className={`${hideInactive ? "hidden" : ""}`}
+          />
+        </View>
+      )}
+    </View>
   );
 };
 

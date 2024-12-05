@@ -15,14 +15,18 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.2",
+    "@mindinventory/react-native-stagger-view": "^1.2.1",
     "@react-native-assets/slider": "^8.0.4",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/drawer": "^6.7.2",
     "@react-navigation/native": "^6.0.2",
+    "@shopify/flash-list": "1.6.4",
     "expo": "~51.0.28",
     "expo-checkbox": "~3.0.0",
     "expo-constants": "~16.0.2",
+    "expo-dev-client": "~4.0.29",
     "expo-font": "~12.0.9",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.23",
@@ -44,10 +48,7 @@
     "react-native-super-grid": "^6.0.1",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.10",
-    "tailwindcss": "^3.4.15",
-    "@shopify/flash-list": "1.6.4",
-    "expo-dev-client": "~4.0.29",
-    "@expo/metro-runtime": "~3.2.3"
+    "tailwindcss": "^3.4.15"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

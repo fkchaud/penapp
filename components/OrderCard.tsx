@@ -102,15 +102,19 @@ export const OrderCard = ({
           <Text>M{order.table.number}</Text>
         </View>
       </View>
-      <View>
-        <View className={"pt-1 pb-0.5 px-1 bg-cyan-300/20"}>
+      <View className={"flex-1"}>
+        <View
+          className={"pt-1 pb-0.5 px-1 bg-cyan-300/20 flex-auto justify-center"}
+        >
           {order.foods.map((food) => (
             <Text key={food.food.id}>
               - {food.quantity}x {food.food.name}
             </Text>
           ))}
         </View>
-        <View className={"pt-0.5 pb-1 px-1 bg-cyan-300/30"}>
+        <View
+          className={"pt-0.5 pb-1 px-1 bg-cyan-300/30 flex-auto justify-center"}
+        >
           {order.drinks.map((drinks) => (
             <Text key={drinks.drink.id}>
               - {drinks.quantity}x {drinks.drink.name}
