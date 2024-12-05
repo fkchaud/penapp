@@ -1,13 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
-import { ActivityIndicator, Button, PaperProvider } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Button, Icon } from "react-native-paper";
 
 import { useRouter } from "expo-router";
 
 import { useIsFocused } from "@react-navigation/core";
 
-import { Theme } from "@/constants/Colors";
 import { Order } from "@/types";
 import { WaiterContext, WaiterContextType } from "@/app/_layout";
 import { useApi } from "@/hooks/useApi";
@@ -21,6 +19,7 @@ const Orders = () => {
   const router = useRouter();
 
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
+  const [hideInactive, setHideInactive] = useState(true);
 
   const retrieveOrders = async () => {
     const newOrders: Order[] = await getOrders({ waiter });
@@ -45,35 +44,43 @@ const Orders = () => {
       ["REJECTED", "DELIVERED", "CANCELED"].includes(o.last_status.status),
     );
 
+  const arrowIcon = hideInactive ? "chevron-up" : "chevron-down";
+
   return (
-    <PaperProvider theme={Theme}>
-      <SafeAreaView>
-        <ScrollView>
-          <Button
-            mode={"contained"}
-            onPress={() => router.navigate("/waiter/take_order")}
+    <View className={"flex-1"}>
+      <Button
+        mode={"contained"}
+        onPress={() => router.navigate("/waiter/take_order")}
+      >
+        Tomar pedido
+      </Button>
+      <View className={"flex-1"}>
+        <OrderMasonry
+          orders={activeOrders()}
+          targetPath={"/waiter/orders/[id]"}
+        />
+      </View>
+      {inactiveOrders().length > 0 && (
+        <View
+          className={`border-t border-t-black/50 ${hideInactive ? "" : "flex-1"}`}
+        >
+          <TouchableOpacity
+            onPress={() => setHideInactive(!hideInactive)}
+            className={"flex-row justify-center items-center"}
           >
-            Tomar pedido
-          </Button>
-          <View>
-            <OrderMasonry
-              orders={activeOrders()}
-              targetPath={"/waiter/orders/[id]"}
-            />
-          </View>
-          {inactiveOrders().length > 0 && (
-            <View>
-              <Text className={"font-bold text-xl mt-4"}>Pasadas:</Text>
-              <OrderMasonry
-                orders={inactiveOrders()}
-                targetPath={"/waiter/orders/[id]"}
-                inactive={true}
-              />
-            </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </PaperProvider>
+            <Icon size={32} source={arrowIcon} />
+            <Text className={"font-bold text-xl my-4"}> Pasadas: </Text>
+            <Icon size={32} source={arrowIcon} />
+          </TouchableOpacity>
+          <OrderMasonry
+            orders={inactiveOrders()}
+            targetPath={"/waiter/orders/[id]"}
+            inactive={true}
+            className={`${hideInactive ? "hidden" : ""}`}
+          />
+        </View>
+      )}
+    </View>
   );
 };
 

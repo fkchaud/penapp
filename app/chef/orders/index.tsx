@@ -1,7 +1,5 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator, PaperProvider } from "react-native-paper";
-import { Theme } from "@/constants/Colors";
+import { Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Icon } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { Order, OrderStatus } from "@/types";
 import { useIsFocused } from "@react-navigation/core";
@@ -41,6 +39,8 @@ const ChefOrders = () => {
       ),
     );
 
+  const arrowIcon = hideInactive ? "chevron-up" : "chevron-down";
+
   return (
     <View className={"flex-1"}>
       <View className={"flex-1"}>
@@ -50,9 +50,16 @@ const ChefOrders = () => {
         />
       </View>
       {inactiveOrders().length > 0 && (
-        <View className={`${hideInactive ? "" : "flex-1"}`}>
-          <TouchableOpacity onPress={() => setHideInactive(!hideInactive)}>
-            <Text className={"font-bold text-xl my-4"}>Pasadas:</Text>
+        <View
+          className={`border-t border-t-black/50 ${hideInactive ? "" : "flex-1"}`}
+        >
+          <TouchableOpacity
+            onPress={() => setHideInactive(!hideInactive)}
+            className={"flex-row justify-center items-center"}
+          >
+            <Icon size={32} source={arrowIcon} />
+            <Text className={"font-bold text-xl my-4"}> Pasadas: </Text>
+            <Icon size={32} source={arrowIcon} />
           </TouchableOpacity>
           <OrderMasonry
             orders={inactiveOrders()}

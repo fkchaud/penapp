@@ -96,7 +96,7 @@ export const ServiceUrlContext = createContext<ServiceUrlContextType | null>(
 );
 const ServiceUrlProvider = ({ children }: { children: React.ReactNode }) => {
   const [serviceUrl, setServiceUrl] = useState<string>(
-    "http://127.0.0.1:8000/",
+    "http://192.168.0.118:8000/",
   );
 
   useEffect(() => {
