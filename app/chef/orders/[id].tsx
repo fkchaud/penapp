@@ -69,6 +69,22 @@ const ChefOrderView = () => {
       );
     }
   }
+  if (order.last_status.status == "PREPARED") {
+    actions.push(
+      <Button
+        key="drinks-ready"
+        mode="contained"
+        onPress={() =>
+          updateOrderStatus({
+            orderId: order.id,
+            orderStatus: "PICKED_UP",
+          }).then(() => router.navigate("/chef/orders"))
+        }
+      >
+        Retirado por el mozo
+      </Button>,
+    );
+  }
 
   return (
     <PaperProvider theme={Theme}>

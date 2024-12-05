@@ -24,7 +24,7 @@ const StatusLabels: Record<
 > = {
   PLACED: { text: "Tomado", className: "bg-gray-200/75", isDark: false },
   ACCEPTED: { text: "Aprobado", className: "bg-yellow-200/50", isDark: false },
-  REJECTED: { text: "Rechazado", className: "bg-red-200", isDark: true },
+  REJECTED: { text: "Rechazado", className: "bg-red-200", isDark: false },
   PREPARED: { text: "Preparado", className: "bg-green-500/15", isDark: false },
   PREPARING: {
     text: "Preparando",
