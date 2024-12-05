@@ -1,19 +1,18 @@
-import {router, useLocalSearchParams} from "expo-router";
-import {Theme} from "@/constants/Colors";
-import {ActivityIndicator, Button, PaperProvider} from "react-native-paper";
-import {SafeAreaView} from "react-native-safe-area-context";
-import {ScrollView, Text} from "react-native";
-import {PaymentMethodLabel, StatusLabel} from "@/components/OrderCard";
-import {useEffect, useState} from "react";
-import {Order} from "@/types";
-import {useIsFocused} from "@react-navigation/core";
-import {useApi} from "@/hooks/useApi";
-
+import { router, useLocalSearchParams } from "expo-router";
+import { Theme } from "@/constants/Colors";
+import { ActivityIndicator, Button, PaperProvider } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, Text } from "react-native";
+import { PaymentMethodLabel, StatusLabel } from "@/components/OrderCard";
+import { useEffect, useState } from "react";
+import { Order } from "@/types";
+import { useIsFocused } from "@react-navigation/core";
+import { useApi } from "@/hooks/useApi";
 
 const OrderView = () => {
-  const { id }: {id: string} = useLocalSearchParams();
+  const { id }: { id: string } = useLocalSearchParams();
   const isFocused = useIsFocused();
-  const {getOrder, updateOrderStatus} = useApi();
+  const { getOrder, updateOrderStatus } = useApi();
 
   const [order, setOrder] = useState<Order | null>(null);
 
@@ -23,11 +22,10 @@ const OrderView = () => {
       setOrder(newOrder);
     };
     retrieveOrder().catch(console.error);
-
   }, [isFocused]);
 
-  if (!order){
-    return <ActivityIndicator size='large' />;
+  if (!order) {
+    return <ActivityIndicator size="large" />;
   }
 
   return (
@@ -37,34 +35,55 @@ const OrderView = () => {
           <Text>Comanda #{order.id}</Text>
           <Text>Mozo {order.waiter.name}</Text>
           <Text>Mesa {order.table.number}</Text>
-          {order.foods.map(food => (
-            <Text key={food.food.id}>- {food.quantity}x {food.food.name}</Text>
+          {order.foods.map((food) => (
+            <Text key={food.food.id}>
+              - {food.quantity}x {food.food.name}
+            </Text>
           ))}
-          {order.drinks.map(drinks => (
-            <Text key={drinks.drink.id}>- {drinks.quantity}x {drinks.drink.name}</Text>
+          {order.drinks.map((drinks) => (
+            <Text key={drinks.drink.id}>
+              - {drinks.quantity}x {drinks.drink.name}
+            </Text>
           ))}
-          <Text>${order.total_price} - {PaymentMethodLabel[order.payment_type]}</Text>
-          {order.last_status && <StatusLabel status={order.last_status.status}/>}
-          {order.last_status.status == 'PLACED'
-            ? <>
+          {(order.comment || null) && (
+            <Text className={"italic"}>{order.comment}</Text>
+          )}
+          <Text>
+            ${order.total_price} - {PaymentMethodLabel[order.payment_type]}
+          </Text>
+          {order.last_status && (
+            <StatusLabel status={order.last_status.status} />
+          )}
+          {order.last_status.status == "PLACED" ? (
+            <>
               <Button
-                mode='contained'
-                onPress={() => updateOrderStatus({orderId: order.id, orderStatus: 'ACCEPTED'}).then(() => router.navigate('/cashier/orders'))}
+                mode="contained"
+                onPress={() =>
+                  updateOrderStatus({
+                    orderId: order.id,
+                    orderStatus: "ACCEPTED",
+                  }).then(() => router.navigate("/cashier/orders"))
+                }
               >
                 Aprobar
               </Button>
               <Button
-                mode='contained'
-                onPress={() => updateOrderStatus({orderId: order.id, orderStatus: 'REJECTED'}).then(() => router.navigate('/cashier/orders'))}
+                mode="contained"
+                onPress={() =>
+                  updateOrderStatus({
+                    orderId: order.id,
+                    orderStatus: "REJECTED",
+                  }).then(() => router.navigate("/cashier/orders"))
+                }
               >
                 Rechazar
               </Button>
             </>
-            : null}
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </PaperProvider>
-  )
-}
+  );
+};
 
 export default OrderView;

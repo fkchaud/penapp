@@ -103,6 +103,9 @@ const ChefOrderView = () => {
               - {drinks.quantity}x {drinks.drink.name}
             </Text>
           ))}
+          {(order.comment || null) && (
+            <Text className={"italic"}>{order.comment}</Text>
+          )}
           <Text>
             ${order.total_price} - {PaymentMethodLabel[order.payment_type]}
           </Text>
