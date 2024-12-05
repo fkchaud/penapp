@@ -12,28 +12,16 @@ const ChefOrders = () => {
   const isFocused = useIsFocused();
   const { getOrders } = useApi();
 
-  const [time, setTime] = useState(Date.now());
-  let interval: NodeJS.Timeout;
-
-  useEffect(() => {
-    clearInterval(interval);
-    if (isFocused) interval = setInterval(() => setTime(Date.now()), 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [isFocused]);
-
   const [orders, setOrders] = useState<Order[] | null>(null);
 
+  const retrieve = async () => {
+    const params: GetOrdersParams = {};
+    const newOrders = await getOrders(params);
+    setOrders(newOrders || []);
+  };
   useEffect(() => {
-    const retrieve = async () => {
-      const params: GetOrdersParams = {};
-      const newOrders = await getOrders(params);
-      setOrders(newOrders || []);
-    };
     retrieve().catch(console.error);
-  }, [isFocused, time]);
+  }, [isFocused]);
 
   if (!orders) {
     return <ActivityIndicator size="large" />;

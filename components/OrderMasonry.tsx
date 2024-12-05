@@ -41,7 +41,7 @@ const OrderMasonry = ({
   return (
     <MasonryFlashList
       numColumns={Math.floor(width / maxWidth)}
-      estimatedItemSize={180}
+      estimatedItemSize={1000}
       data={orders}
       renderItem={({ item }) => (
         <TouchableOpacity

@@ -20,27 +20,15 @@ const Orders = () => {
   const { getOrders } = useApi();
   const router = useRouter();
 
-  const [time, setTime] = useState(Date.now());
-  let interval: NodeJS.Timeout;
-
-  useEffect(() => {
-    clearInterval(interval);
-    if (isFocused) interval = setInterval(() => setTime(Date.now()), 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [isFocused]);
-
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
 
+  const retrieveOrders = async () => {
+    const newOrders: Order[] = await getOrders({ waiter });
+    setOrders(newOrders.sort((a, b) => b.id - a.id) || []);
+  };
   useEffect(() => {
-    const retrieve = async () => {
-      const newOrders: Order[] = await getOrders({ waiter });
-      setOrders(newOrders.sort((a, b) => b.id - a.id) || []);
-    };
-    retrieve().catch(console.error);
-  }, [waiter, isFocused, time]);
+    retrieveOrders().catch(console.error);
+  }, [waiter, isFocused]);
 
   if (!orders) {
     return <ActivityIndicator size="large" />;

@@ -121,7 +121,7 @@ export const OrderCard = ({
       <View
         className={`py-1 px-1 border-t border-t-cyan-800/60 ${statusLabel?.className || ""}`}
       >
-        {order.comment && (
+        {(order.comment || null) && (
           <Text className={"italic text-inherit"}>{order.comment}</Text>
         )}
         <View className={"flex-row align-middle"}>
