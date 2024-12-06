@@ -110,9 +110,11 @@ const Index = () => {
                 Seleccione el mozo antes de continuar
               </HelperText>
               <SelectList
-                setSelected={(val: string) =>
-                  setWaiter(waiters.find((w) => w.name == val)?.name || "")
-                }
+                setSelected={(val: string) => {
+                  if (waiters.length === 0) return;
+                  const wt = waiters.find((w) => w.name == val);
+                  if (wt) setWaiter(wt.name);
+                }}
                 data={
                   waiters?.map((w) => ({ key: w.name, value: w.name })) || []
                 }
