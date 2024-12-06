@@ -2,7 +2,7 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HelperText, SegmentedButtons, TextInput } from "react-native-paper";
 import { useContext, useEffect, useState } from "react";
-import { Table, UserType, UserTypeByKey, Waiter } from "@/types";
+import { Table, UserType, UserTypeByKey, WaiterTables } from "@/types";
 import {
   ServiceUrlContext,
   ServiceUrlContextType,
@@ -14,7 +14,6 @@ import {
 import { SelectList } from "react-native-dropdown-select-list";
 import { useIsFocused } from "@react-navigation/core";
 import { useApi } from "@/hooks/useApi";
-import { RangeSlider } from "@react-native-assets/slider";
 
 const UserTypeSelector = () => {
   const { userType, setUserType } = useContext(
@@ -45,17 +44,22 @@ const UserTypeSelector = () => {
 
 const Index = () => {
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
-  const { waiter, setWaiter, tableRange, setTableRange } = useContext(
-    WaiterContext,
-  ) as WaiterContextType;
+  const { waiter, setWaiter } = useContext(WaiterContext) as WaiterContextType;
   const { serviceUrl, setServiceUrl } = useContext(
     ServiceUrlContext,
   ) as ServiceUrlContextType;
   const isFocused = useIsFocused();
-  const { getTables, getWaiters } = useApi();
+  const { getTables, getWaiters, updateWaiter } = useApi();
 
-  const [waiters, setWaiters] = useState<Waiter[]>([]);
+  const [waiters, setWaiters] = useState<WaiterTables[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
+  const [lastUpdatedTables, setLastUpdatedTables] = useState<{
+    from: number;
+    to: number;
+  }>({
+    from: waiter?.from_table.number || 0,
+    to: waiter?.to_table.number || 0,
+  });
 
   useEffect(() => {
     if (!isFocused) return;
@@ -68,6 +72,10 @@ const Index = () => {
   }, [userType, isFocused]);
 
   useEffect(() => {
+    setServiceUrl("http://localhost:81/");
+  }, []);
+
+  useEffect(() => {
     if (!isFocused) return;
 
     const call = async () => {
@@ -77,20 +85,14 @@ const Index = () => {
     call().catch(console.error);
   }, [userType, isFocused]);
 
-  useEffect(() => {
-    if (!tables || tables.length === 0) return;
-
-    if (!tableRange.min)
-      setTableRange({
-        ...tableRange,
-        min: Math.min(...tables.map((t) => t.number)),
-      });
-    if (!tableRange.max)
-      setTableRange({
-        ...tableRange,
-        max: Math.max(...tables.map((t) => t.number)),
-      });
-  }, [tables]);
+  const setTableRange = ({ min, max }: { min: number; max: number }) => {
+    const updatedWaiter = {
+      ...waiter,
+      from_table: { number: min },
+      to_table: { number: max },
+    };
+    setWaiter(updatedWaiter);
+  };
 
   return (
     <SafeAreaView>
@@ -113,37 +115,66 @@ const Index = () => {
                 setSelected={(val: string) => {
                   if (waiters.length === 0) return;
                   const wt = waiters.find((w) => w.name == val);
-                  if (wt) setWaiter(wt.name);
+                  if (wt) setWaiter(wt);
                 }}
                 data={
                   waiters?.map((w) => ({ key: w.name, value: w.name })) || []
                 }
                 defaultOption={
-                  waiter ? { key: waiter, value: waiter } : undefined
+                  waiter ? { key: waiter.name, value: waiter.name } : undefined
                 }
                 save="value"
                 search={waiters ? waiters.length > 5 : false}
                 boxStyles={waiter ? {} : { borderColor: "red" }}
               />
               <Text />
-              {tables?.length > 0 && (
-                <View>
-                  <Text>
-                    Mesas que atiende: {tableRange.min} - {tableRange.max}
-                  </Text>
-                  <RangeSlider
-                    style={{
-                      margin: 30,
-                    }}
-                    range={[tableRange.min, tableRange.max]}
-                    minimumValue={Math.min(...tables.map((t) => t.number))}
-                    maximumValue={Math.max(...tables.map((t) => t.number))}
-                    step={1}
-                    slideOnTap={false}
-                    onValueChange={(range) =>
-                      setTableRange({ min: range[0], max: range[1] })
-                    }
-                  />
+              {tables?.length > 0 && waiter && (
+                <View className={"mt-4"}>
+                  <Text>Mesas que atiende:</Text>
+                  <View className={"flex-row"}>
+                    <TextInput
+                      mode={"outlined"}
+                      label={"Desde"}
+                      inputMode={"numeric"}
+                      value={waiter.from_table.number.toString()}
+                      onChangeText={(text) =>
+                        setTableRange({
+                          min: Number(text),
+                          max: waiter.to_table.number,
+                        })
+                      }
+                      onBlur={() => {
+                        if (lastUpdatedTables.from == waiter.from_table.number)
+                          return;
+                        updateWaiter(waiter);
+                        setLastUpdatedTables({
+                          ...lastUpdatedTables,
+                          from: waiter.from_table.number,
+                        });
+                      }}
+                    />
+                    <TextInput
+                      mode={"outlined"}
+                      label={"Hasta"}
+                      inputMode={"numeric"}
+                      value={waiter.to_table.number.toString()}
+                      onChangeText={(text) =>
+                        setTableRange({
+                          min: waiter.from_table.number,
+                          max: Number(text),
+                        })
+                      }
+                      onBlur={() => {
+                        if (lastUpdatedTables.to == waiter.to_table.number)
+                          return;
+                        updateWaiter(waiter);
+                        setLastUpdatedTables({
+                          ...lastUpdatedTables,
+                          to: waiter.to_table.number,
+                        });
+                      }}
+                    />
+                  </View>
                 </View>
               )}
             </>

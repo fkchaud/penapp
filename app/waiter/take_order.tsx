@@ -48,7 +48,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       throw Error("Empty payment method");
     }
     return {
-      waiter: waiter,
+      waiter: waiter.name,
       table: currentTable?.number,
       food: [...foodToOrder.entries()].map(([food, quantity]) => ({
         id: food.id,

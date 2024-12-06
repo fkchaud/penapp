@@ -1,4 +1,11 @@
-import { Item, Order, OrderStatus, OrderToPlace, Waiter } from "@/types";
+import {
+  Item,
+  Order,
+  OrderStatus,
+  OrderToPlace,
+  WaiterTables,
+  Table,
+} from "@/types";
 import { useContext } from "react";
 import { ServiceUrlContext, ServiceUrlContextType } from "@/app/_layout";
 
@@ -22,12 +29,12 @@ export const useApi = () => {
     }
   };
 
-  const getTables = async () => {
+  const getTables: () => Promise<Table[]> = async () => {
     const url = serviceUrl + "tables/";
     return await getAny(url);
   };
 
-  const getWaiters: () => Promise<Waiter[]> = async () => {
+  const getWaiters: () => Promise<WaiterTables[]> = async () => {
     const url = serviceUrl + "waiters/";
     return await getAny(url);
   };
@@ -140,6 +147,22 @@ export const useApi = () => {
       console.error(error);
     }
   };
+
+  const updateWaiter = async ({ name, from_table, to_table }: WaiterTables) => {
+    const url = serviceUrl + `waiters/${name}/`;
+
+    try {
+      const response = await fetch(url, {
+        method: "PATCH",
+        body: JSON.stringify({ name, from_table, to_table }),
+        headers: { "Content-Type": "application/json" },
+      });
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     getTables,
     getWaiters,
@@ -150,5 +173,6 @@ export const useApi = () => {
     placeOrder,
     updateOrder,
     updateOrderStatus,
+    updateWaiter,
   };
 };

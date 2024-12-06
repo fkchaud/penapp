@@ -23,7 +23,7 @@ export const TableTopBar = ({
   setCurrentTable,
   autoCurrentTable = true,
 }: TableTopBarProps) => {
-  const { tableRange } = useContext(WaiterContext) as WaiterContextType;
+  const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
   const { getTables } = useApi();
 
@@ -36,9 +36,10 @@ export const TableTopBar = ({
       newTables = newTables.map((table) => ({ number: table.number }));
       setTables(newTables);
       if (newTables && newTables.length > 0 && autoCurrentTable) {
-        if (tableRange.min)
+        if (waiter.from_table.number)
           setCurrentTable(
-            newTables.find((t) => t.number === tableRange.min) || newTables[0],
+            newTables.find((t) => t.number === waiter.from_table.number) ||
+              newTables[0],
           );
         else setCurrentTable(newTables[0]);
       }
@@ -49,8 +50,8 @@ export const TableTopBar = ({
   if (
     currentTable &&
     !enableAllTables &&
-    (currentTable.number < tableRange.min ||
-      currentTable.number > tableRange.max)
+    (currentTable.number < waiter.from_table.number ||
+      currentTable.number > waiter.to_table.number)
   ) {
     setEnableAllTables(true);
   }
@@ -76,9 +77,13 @@ export const TableTopBar = ({
       <FlatList
         horizontal={true}
         data={
-          tableRange.min && tableRange.max && !enableAllTables
+          waiter?.from_table.number &&
+          waiter?.to_table.number &&
+          !enableAllTables
             ? tables.filter(
-                (t) => t.number >= tableRange.min && t.number <= tableRange.max,
+                (t) =>
+                  t.number >= waiter.from_table.number &&
+                  t.number <= waiter.to_table.number,
               )
             : tables
         }

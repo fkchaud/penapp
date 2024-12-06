@@ -4,56 +4,40 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider, Portal, Snackbar } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Theme } from "@/constants/Colors";
-import { UserType } from "@/types";
+import { UserType, WaiterTables } from "@/types";
 
-export type WaiterTableRangeType = {
-  min: number;
-  max: number;
-};
 export type WaiterContextType = {
-  waiter: string;
-  setWaiter: React.Dispatch<React.SetStateAction<string>>;
-  tableRange: WaiterTableRangeType;
-  setTableRange: React.Dispatch<React.SetStateAction<WaiterTableRangeType>>;
+  waiter: WaiterTables;
+  setWaiter: React.Dispatch<React.SetStateAction<WaiterTables>>;
 };
 export const WaiterContext = createContext({});
 const WaiterProvider = ({ children }: { children: React.ReactNode }) => {
-  const [waiter, setWaiter] = useState<string>("");
-  const [tableRange, setTableRange] = useState<WaiterTableRangeType>({
-    min: 0,
-    max: 0,
-  });
+  const [waiter, setWaiter] = useState<WaiterTables>();
+
+  const isWaiter = (obj: any): obj is WaiterTables =>
+    "name" in obj && "from_table" in obj && "to_table" in obj;
 
   useEffect(() => {
     const retrieve = async () => {
-      AsyncStorage.getItem("waiter").then((wt) => wt && setWaiter(wt));
-      AsyncStorage.getItem("minTable").then((minT) =>
-        AsyncStorage.getItem("maxTable").then((maxT) => {
-          const newTableRange: { min?: number; max?: number } = {};
-          if (minT) newTableRange.min = Number(minT);
-          if (maxT) newTableRange.max = Number(maxT);
-          setTableRange({ ...tableRange, ...newTableRange });
-        }),
-      );
+      AsyncStorage.getItem("waiter_obj").then((wt) => {
+        if (!wt) return;
+        const wtp = JSON.parse(wt);
+        if (!isWaiter(wtp)) {
+          console.error("Not WaiterTable", wtp);
+        } else {
+          setWaiter(wtp);
+        }
+      });
     };
     retrieve();
   }, []);
 
   useEffect(() => {
-    if (waiter) AsyncStorage.setItem("waiter", waiter);
+    if (waiter) AsyncStorage.setItem("waiter_obj", JSON.stringify(waiter));
   }, [waiter]);
 
-  useEffect(() => {
-    if (tableRange.min)
-      AsyncStorage.setItem("minTable", tableRange.min?.toString() || "");
-    if (tableRange.max)
-      AsyncStorage.setItem("maxTable", tableRange.max?.toString() || "");
-  }, [tableRange]);
-
   return (
-    <WaiterContext.Provider
-      value={{ waiter, setWaiter, tableRange, setTableRange }}
-    >
+    <WaiterContext.Provider value={{ waiter, setWaiter }}>
       {children}
     </WaiterContext.Provider>
   );

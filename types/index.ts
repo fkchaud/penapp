@@ -13,6 +13,11 @@ export type Waiter = {
   name: string;
 };
 
+export type WaiterTables = Waiter & {
+  from_table: Table;
+  to_table: Table;
+};
+
 export type Item = {
   id: number;
   name: string;
