@@ -164,6 +164,7 @@ export const useApi = () => {
   };
 
   return {
+    serviceUrl,
     getTables,
     getWaiters,
     getFoods,

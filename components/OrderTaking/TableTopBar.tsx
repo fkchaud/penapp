@@ -25,7 +25,7 @@ export const TableTopBar = ({
 }: TableTopBarProps) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
-  const { getTables } = useApi();
+  const { serviceUrl, getTables } = useApi();
 
   const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
   const [tables, setTables] = useState<Table[]>([]);
@@ -45,7 +45,7 @@ export const TableTopBar = ({
       }
     };
     retrieveTables().catch(console.error);
-  }, [isFocused]);
+  }, [isFocused, serviceUrl]);
 
   if (
     currentTable &&

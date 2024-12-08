@@ -69,11 +69,7 @@ const Index = () => {
       setWaiters(newWaiters);
     };
     call().catch(console.error);
-  }, [userType, isFocused]);
-
-  useEffect(() => {
-    setServiceUrl("http://localhost:81/");
-  }, []);
+  }, [userType, isFocused, serviceUrl]);
 
   useEffect(() => {
     if (!isFocused) return;
@@ -83,7 +79,7 @@ const Index = () => {
       setTables(newTables);
     };
     call().catch(console.error);
-  }, [userType, isFocused]);
+  }, [userType, isFocused, serviceUrl]);
 
   const setTableRange = ({ min, max }: { min: number; max: number }) => {
     const updatedWaiter = {

@@ -189,7 +189,7 @@ const InternalEditOrder = () => {
         onConfirm={() => {
           updateOrder(order.id, buildOrder())
             .then(() => {
-              setOnDismiss(() => router.navigate(`/waiter/orders/${order.id}`));
+              setOnDismiss(() => router.navigate(`/waiter/orders`));
               setAlertMessage("Comanda enviada");
             })
             .catch((e) => {

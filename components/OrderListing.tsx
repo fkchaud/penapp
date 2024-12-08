@@ -25,7 +25,8 @@ export const OrderListing = ({
   orderActionsBuilder,
 }: OrderListingProps) => {
   const isFocused = useIsFocused();
-  const { getOrders } = useApi();
+
+  const { serviceUrl, getOrders } = useApi();
 
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [hideInactive, setHideInactive] = useState(true);
@@ -38,7 +39,7 @@ export const OrderListing = ({
   useEffect(() => {
     if (!isFocused) return;
     retrieveOrders().catch(console.error);
-  }, [isFocused]);
+  }, [isFocused, serviceUrl]);
 
   const arrowIcon = hideInactive ? "chevron-up" : "chevron-down";
 
