@@ -1,31 +1,35 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator, Icon } from "react-native-paper";
-import OrderMasonry, { ValidPaths } from "@/components/OrderMasonry";
+import OrderMasonry from "@/components/OrderMasonry";
 import { Order, OrderStatus } from "@/types";
 import React, { useEffect, useState } from "react";
 import { GetOrdersParams, useApi } from "@/hooks/useApi";
 import { useIsFocused } from "@react-navigation/core";
+import { OrderCard } from "@/components/OrderCard";
 
 type OrderListingProps = {
   beforeComponent?: React.ReactNode;
-  individualOrderPath: ValidPaths;
   activeOrderStatuses: OrderStatus[];
   inactiveOrderStatuses: OrderStatus[];
   getOrderParams?: GetOrdersParams;
+  orderActionsBuilder: (
+    order: Order | null,
+    onActionCallback: () => void,
+  ) => React.ReactNode[];
 };
-
 export const OrderListing = ({
   beforeComponent,
-  individualOrderPath,
   activeOrderStatuses,
   inactiveOrderStatuses,
   getOrderParams,
+  orderActionsBuilder,
 }: OrderListingProps) => {
   const isFocused = useIsFocused();
   const { getOrders } = useApi();
 
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [hideInactive, setHideInactive] = useState(true);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
   const retrieveOrders = async () => {
     const newOrders = await getOrders(getOrderParams);
@@ -50,12 +54,42 @@ export const OrderListing = ({
 
   return (
     <View className={"flex-1"}>
+      <Modal
+        visible={!!currentOrder && isFocused}
+        onDismiss={() => setCurrentOrder(null)}
+        onRequestClose={() => setCurrentOrder(null)}
+        transparent={true}
+        animationType={"none"}
+      >
+        <Pressable
+          onPress={() => setCurrentOrder(null)}
+          className={
+            "w-full h-full justify-center items-center bg-black/25 cursor-default"
+          }
+        >
+          <Pressable className={"cursor-auto"}>
+            <View
+              className={"align-middle w-5/6"}
+              style={{
+                transform: [{ scale: 2 }],
+                width: 256,
+              }}
+            >
+              <Pressable
+                className={"self-end items-center bg-white/25 w-4"}
+                onPress={() => setCurrentOrder(null)}
+              >
+                <Text className={"text-center"}>X</Text>
+              </Pressable>
+              <OrderCard order={currentOrder} />
+              {orderActionsBuilder(currentOrder, () => retrieveOrders())}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
       {beforeComponent}
       <View className={"flex-1"}>
-        <OrderMasonry
-          orders={activeOrders()}
-          targetPath={individualOrderPath}
-        />
+        <OrderMasonry orders={activeOrders()} onPressCard={setCurrentOrder} />
       </View>
       {inactiveOrders().length > 0 && (
         <View
@@ -71,7 +105,7 @@ export const OrderListing = ({
           </TouchableOpacity>
           <OrderMasonry
             orders={inactiveOrders()}
-            targetPath={individualOrderPath}
+            onPressCard={setCurrentOrder}
             inactive={true}
             className={`${hideInactive ? "hidden" : ""}`}
           />

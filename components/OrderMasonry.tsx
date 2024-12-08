@@ -1,18 +1,12 @@
 import { TouchableOpacity, useWindowDimensions, ViewStyle } from "react-native";
 
-import { useRouter } from "expo-router";
+import StaggeredList from "@mindinventory/react-native-stagger-view";
 
 import { OrderCard } from "@/components/OrderCard";
 import { Order } from "@/types";
-import StaggeredList from "@mindinventory/react-native-stagger-view";
 
-export type ValidPaths =
-  | "/cashier/orders/[id]"
-  | "/waiter/orders/[id]"
-  | "/chef/orders/[id]";
 type Props = {
   orders: Order[];
-  targetPath: ValidPaths;
   maxWidth?: number;
   inactive?: boolean;
   className?: string;
@@ -21,11 +15,11 @@ type Props = {
   style?: ViewStyle;
   touchableOpacityStyle?: ViewStyle;
   orderCardStyle?: ViewStyle;
+  onPressCard: (order: Order) => void;
 };
 
 const OrderMasonry = ({
   orders,
-  targetPath,
   maxWidth = 180,
   inactive = false,
   className,
@@ -34,8 +28,8 @@ const OrderMasonry = ({
   style,
   touchableOpacityStyle,
   orderCardStyle,
+  onPressCard,
 }: Props) => {
-  const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
 
   return (
@@ -47,9 +41,7 @@ const OrderMasonry = ({
       data={orders}
       renderItem={({ item }) => (
         <TouchableOpacity
-          onPress={() =>
-            router.push({ pathname: targetPath, params: { id: item.id } })
-          }
+          onPress={() => onPressCard(item)}
           className={`w-44 my-1.5 ${touchableOpacityClassName || ""}`}
           key={item.id}
           style={{ ...touchableOpacityStyle }}

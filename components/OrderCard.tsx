@@ -70,10 +70,12 @@ export const OrderCard = ({
   style,
   ...props
 }: {
-  order: Order;
+  order: Order | null;
   className?: string;
   style?: ViewStyle;
 }) => {
+  if (!order) return null;
+
   const statusLabel = StatusLabels[order.last_status.status];
   const paymentMethodIcon = PaymentMethodIcon[order.payment_type];
 

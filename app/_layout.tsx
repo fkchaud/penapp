@@ -156,23 +156,11 @@ const MyDrawer = () => {
         }}
       />
       <Drawer.Screen
-        name={"waiter/orders/[id]/index"}
-        options={{ drawerItemStyle: { display: "none" }, title: `Pedido` }}
-      />
-      <Drawer.Screen
         name={"waiter/orders/[id]/edit"}
         options={{
           drawerItemStyle: { display: "none" },
           title: `Editar Pedido`,
         }}
-      />
-      <Drawer.Screen
-        name={"cashier/orders/[id]"}
-        options={{ drawerItemStyle: { display: "none" }, title: `Pedido` }}
-      />
-      <Drawer.Screen
-        name={"chef/orders/[id]"}
-        options={{ drawerItemStyle: { display: "none" }, title: `Pedido` }}
       />
     </Drawer>
   );
