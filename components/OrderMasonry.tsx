@@ -6,7 +6,7 @@ import { OrderCard } from "@/components/OrderCard";
 import { Order } from "@/types";
 import StaggeredList from "@mindinventory/react-native-stagger-view";
 
-type ValidPaths =
+export type ValidPaths =
   | "/cashier/orders/[id]"
   | "/waiter/orders/[id]"
   | "/chef/orders/[id]";

@@ -139,7 +139,7 @@ const MyDrawer = () => {
         name={"waiter/orders/index"}
         options={{
           drawerLabel: "Ver pedidos",
-          title: `Pedidos (${waiter ? waiter : "Mozos"})`,
+          title: `Pedidos (${waiter ? waiter.name : "Mozos"})`,
           drawerItemStyle: {
             display: userType == UserType.Waiter ? "flex" : "none",
           },
