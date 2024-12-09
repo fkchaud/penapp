@@ -1,4 +1,6 @@
+import React from "react";
 import { Button } from "react-native-paper";
+import { useRouter } from "expo-router";
 
 import { OrderListing } from "@/components/OrderListing";
 import { useApi } from "@/hooks/useApi";
@@ -6,6 +8,7 @@ import { Order } from "@/types";
 
 const CashierOrders = () => {
   const { updateOrderStatus } = useApi();
+  const router = useRouter();
 
   const getActions = (order: Order | null, onActionCallback: () => void) => {
     if (!order || order.last_status?.status != "PLACED") return [];
@@ -13,6 +16,7 @@ const CashierOrders = () => {
     return [
       <Button
         mode="contained"
+        key="approve"
         onPress={() =>
           updateOrderStatus({
             orderId: order.id,
@@ -24,6 +28,7 @@ const CashierOrders = () => {
       </Button>,
       <Button
         mode="contained"
+        key="reject"
         onPress={() =>
           updateOrderStatus({
             orderId: order.id,
@@ -49,6 +54,14 @@ const CashierOrders = () => {
         "DELIVERED",
         "CANCELED",
       ]}
+      beforeComponent={
+        <Button
+          mode={"contained"}
+          onPress={() => router.navigate("/add_manual_order")}
+        >
+          Agregar pedido
+        </Button>
+      }
     />
   );
 };

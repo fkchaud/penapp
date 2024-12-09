@@ -17,17 +17,20 @@ type TableTopBarProps = {
   currentTable: Table | null;
   setCurrentTable: (table: Table) => void;
   autoCurrentTable?: boolean;
+  forceAllTables?: boolean;
 };
 export const TableTopBar = ({
   currentTable,
   setCurrentTable,
   autoCurrentTable = true,
+  forceAllTables = false,
 }: TableTopBarProps) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
   const { serviceUrl, getTables } = useApi();
 
-  const [enableAllTables, setEnableAllTables] = useState<boolean>(false);
+  const [enableAllTables, setEnableAllTables] =
+    useState<boolean>(forceAllTables);
   const [tables, setTables] = useState<Table[]>([]);
 
   useEffect(() => {
@@ -60,19 +63,21 @@ export const TableTopBar = ({
     <TopBar>
       <View className={"flex-row items-center"}>
         <Text className={"flex-1 text-xl font-bold"}>Mesa</Text>
-        <Pressable
-          className={"flex-row items-center"}
-          onPress={() => setEnableAllTables(!enableAllTables)}
-        >
-          <Checkbox
-            value={enableAllTables}
-            onValueChange={(value) => setEnableAllTables(value)}
-            style={{ width: 16, height: 16, borderWidth: 1 }}
-          />
-          <Text className={"ml-1 text-sm text-neutral-700"}>
-            Mostrar todas las mesas
-          </Text>
-        </Pressable>
+        {!forceAllTables && (
+          <Pressable
+            className={"flex-row items-center"}
+            onPress={() => setEnableAllTables(!enableAllTables)}
+          >
+            <Checkbox
+              value={enableAllTables}
+              onValueChange={(value) => setEnableAllTables(value)}
+              style={{ width: 16, height: 16, borderWidth: 1 }}
+            />
+            <Text className={"ml-1 text-sm text-neutral-700"}>
+              Mostrar todas las mesas
+            </Text>
+          </Pressable>
+        )}
       </View>
       <FlatList
         horizontal={true}

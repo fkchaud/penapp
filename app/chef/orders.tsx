@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import { Button } from "react-native-paper";
+import { useRouter } from "expo-router";
 
 import { OrderListing } from "@/components/OrderListing";
 import { useApi } from "@/hooks/useApi";
@@ -7,6 +8,7 @@ import { Order } from "@/types";
 
 const ChefOrders = () => {
   const { updateOrderStatus } = useApi();
+  const router = useRouter();
 
   const getActions = (order: Order | null, onActionCallback: () => void) => {
     if (!order) return [];
@@ -82,6 +84,14 @@ const ChefOrders = () => {
         "DELIVERED",
         "CANCELED",
       ]}
+      beforeComponent={
+        <Button
+          mode={"contained"}
+          onPress={() => router.navigate("/add_manual_order")}
+        >
+          Agregar pedido
+        </Button>
+      }
     />
   );
 };

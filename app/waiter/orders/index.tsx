@@ -21,6 +21,7 @@ const Orders = () => {
 
     actions.push(
       <Button
+        key="edit"
         onPress={() =>
           router.navigate({
             pathname: "/waiter/orders/[id]/edit",
@@ -34,6 +35,7 @@ const Orders = () => {
     if (order.last_status.status == "PLACED") {
       actions.push(
         <Button
+          key="cancel"
           mode="contained"
           onPress={() =>
             updateOrderStatus({
@@ -49,6 +51,7 @@ const Orders = () => {
     if (order.last_status.status == "PLACED") {
       actions.push(
         <Button
+          key="delivered"
           mode="contained"
           onPress={() =>
             updateOrderStatus({
@@ -76,7 +79,6 @@ const Orders = () => {
         </Button>
       }
       orderActionsBuilder={getActions}
-      individualOrderPath={"/waiter/orders/[id]"}
       activeOrderStatuses={[
         "PLACED",
         "ACCEPTED",

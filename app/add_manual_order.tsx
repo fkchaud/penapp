@@ -1,10 +1,12 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { TextInput, View } from "react-native";
-import { router } from "expo-router";
-import { PaperProvider } from "react-native-paper";
+import {
+  AlertContext,
+  AlertContextType,
+  UserTypeContext,
+  UserTypeContextType,
+} from "@/app/_layout";
 import { useIsFocused } from "@react-navigation/core";
-
-import "@/css/global.css";
+import { useApi } from "@/hooks/useApi";
 import {
   Item,
   ItemById,
@@ -12,25 +14,22 @@ import {
   PaymentType,
   QuantityByItem,
   Table,
+  UserType,
 } from "@/types";
+import { TextInput, View } from "react-native";
+import { PaperProvider } from "react-native-paper";
 import { Theme } from "@/constants/Colors";
-import {
-  AlertContext,
-  AlertContextType,
-  WaiterContext,
-  WaiterContextType,
-} from "@/app/_layout";
-import { useApi } from "@/hooks/useApi";
-import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
-import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
-import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
+import { Href, router } from "expo-router";
+import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
+import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
+import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 
-const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
-  const { waiter } = useContext(WaiterContext) as WaiterContextType;
+const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const { setAlertMessage, setOnDismiss } = useContext(
     AlertContext,
   ) as AlertContextType;
+  const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const isFocused = useIsFocused();
   const { serviceUrl, getDrinks, getFoods, placeOrder } = useApi();
 
@@ -45,11 +44,10 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const buildOrder: () => OrderToPlace = () => {
     if (!paymentMethod) {
       console.error("Empty payment method");
-      throw Error("Empty payment method");
+      throw Error("Selecciona un método de pago");
     }
-    return {
-      waiter: waiter.name,
-      table: currentTable?.number,
+
+    const otp: OrderToPlace = {
       food: [...foodToOrder.entries()].map(([food, quantity]) => ({
         id: food.id,
         quantity,
@@ -61,10 +59,14 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       payment_type: paymentMethod,
       comment: comment,
     };
+    if (currentTable) otp.table = currentTable.number;
+    return otp;
   };
 
   // Get foods and drinks every time the screen is focused
   useEffect(() => {
+    if (!isFocused) return;
+
     const retrieveFoods = async () => {
       const newFoods = await getFoods();
       setFoods(
@@ -141,10 +143,15 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         onConfirm={() => {
+          let target: Href<string>;
+          if (userType == UserType.Chef) target = "/chef/orders";
+          else if (userType == UserType.Cashier) target = "/cashier/orders";
+          else target = "/";
+
           placeOrder(buildOrder())
             .then(() => {
-              setOnDismiss(() => router.navigate("/waiter/orders"));
-              setAlertMessage("Comanda enviada");
+              setOnDismiss(() => router.navigate(target));
+              setAlertMessage("Comanda agregada");
             })
             .catch((e) => {
               console.error(e);
@@ -163,6 +170,8 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         <TableTopBar
           currentTable={currentTable}
           setCurrentTable={setCurrentTable}
+          autoCurrentTable={false}
+          forceAllTables={true}
         />
         <FoodPicker
           foods={Object.values(foods)}
@@ -186,7 +195,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   );
 };
 
-const TakeOrder = () => {
+const AddManualOrder = () => {
   const [key, setKey] = useState<string>();
 
   const reset = () => setKey(Math.random().toString());
@@ -195,7 +204,7 @@ const TakeOrder = () => {
     reset();
   }, [isFocused]);
 
-  return <InternalTakeOrder key={key} reset={reset} />;
+  return <InternalAddManualOrder key={key} reset={reset} />;
 };
 
-export default TakeOrder;
+export default AddManualOrder;

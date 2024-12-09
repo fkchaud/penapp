@@ -94,14 +94,14 @@ export const OrderCard = ({
           <Text className={"font-bold"}>#{order.id}</Text>
         </View>
         <View className={"py-0.5 px-1 flex-1 items-center bg-yellow-800/30"}>
-          <Text>{order.waiter.name}</Text>
+          {order.waiter && <Text>{order.waiter.name}</Text>}
         </View>
         <View
           className={
             "py-0.5 px-1 border-l border-l-yellow-800/5 bg-yellow-800/40"
           }
         >
-          <Text>M{order.table.number}</Text>
+          {order.table && <Text>M{order.table.number}</Text>}
         </View>
       </View>
       <View className={"flex-1"}>

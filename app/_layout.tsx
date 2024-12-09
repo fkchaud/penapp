@@ -116,7 +116,7 @@ const MyDrawer = () => {
         }}
       />
       <Drawer.Screen
-        name={"cashier/orders/index"}
+        name={"cashier/orders"}
         options={{
           drawerLabel: "Ver pedidos",
           title: "Pedidos (Caja)",
@@ -126,7 +126,19 @@ const MyDrawer = () => {
         }}
       />
       <Drawer.Screen
-        name={"chef/orders/index"}
+        name={"add_manual_order"}
+        options={{
+          drawerLabel: "Agregar pedido",
+          title: "Pedido manual",
+          drawerItemStyle: {
+            display: [UserType.Cashier, UserType.Chef].includes(userType)
+              ? "flex"
+              : "none",
+          },
+        }}
+      />
+      <Drawer.Screen
+        name={"chef/orders"}
         options={{
           drawerLabel: "Ver pedidos",
           title: "Pedidos (Cocina)",
