@@ -4,8 +4,6 @@ import { HelperText, SegmentedButtons, TextInput } from "react-native-paper";
 import { useContext, useEffect, useState } from "react";
 import { Table, UserType, UserTypeByKey, WaiterTables } from "@/types";
 import {
-  ServiceUrlContext,
-  ServiceUrlContextType,
   UserTypeContext,
   UserTypeContextType,
   WaiterContext,
@@ -45,9 +43,6 @@ const UserTypeSelector = () => {
 const Index = () => {
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter, setWaiter } = useContext(WaiterContext) as WaiterContextType;
-  const { serviceUrl, setServiceUrl } = useContext(
-    ServiceUrlContext,
-  ) as ServiceUrlContextType;
   const isFocused = useIsFocused();
   const { getTables, getWaiters, updateWaiter } = useApi();
 
@@ -69,7 +64,7 @@ const Index = () => {
       setWaiters(newWaiters);
     };
     call().catch(console.error);
-  }, [userType, isFocused, serviceUrl]);
+  }, [userType, isFocused]);
 
   useEffect(() => {
     if (!isFocused) return;
@@ -79,7 +74,7 @@ const Index = () => {
       setTables(newTables);
     };
     call().catch(console.error);
-  }, [userType, isFocused, serviceUrl]);
+  }, [userType, isFocused]);
 
   const setTableRange = ({ min, max }: { min: number; max: number }) => {
     const updatedWaiter = {
@@ -94,13 +89,6 @@ const Index = () => {
     <SafeAreaView>
       <ScrollView>
         <View>
-          <TextInput
-            label="Url del servidor:"
-            value={serviceUrl}
-            mode="outlined"
-            onChangeText={(text) => setServiceUrl(text)}
-          />
-          <Text />
           <UserTypeSelector />
           {userType == UserType.Waiter && (
             <>

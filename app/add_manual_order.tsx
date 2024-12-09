@@ -31,7 +31,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   ) as AlertContextType;
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const isFocused = useIsFocused();
-  const { serviceUrl, getDrinks, getFoods, placeOrder } = useApi();
+  const { getDrinks, getFoods, placeOrder } = useApi();
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -87,7 +87,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
     };
     retrieveFoods().catch(console.error);
     retrieveDrinks().catch(console.error);
-  }, [isFocused, serviceUrl]);
+  }, [isFocused]);
 
   const recalculatePrice = (
     foodToOrder: QuantityByItem,

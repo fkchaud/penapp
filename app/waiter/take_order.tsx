@@ -32,7 +32,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     AlertContext,
   ) as AlertContextType;
   const isFocused = useIsFocused();
-  const { serviceUrl, getDrinks, getFoods, placeOrder } = useApi();
+  const { getDrinks, getFoods, placeOrder } = useApi();
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -85,7 +85,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     };
     retrieveFoods().catch(console.error);
     retrieveDrinks().catch(console.error);
-  }, [isFocused, serviceUrl]);
+  }, [isFocused]);
 
   const recalculatePrice = (
     foodToOrder: QuantityByItem,

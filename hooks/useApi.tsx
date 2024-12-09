@@ -6,8 +6,6 @@ import {
   WaiterTables,
   Table,
 } from "@/types";
-import { useContext } from "react";
-import { ServiceUrlContext, ServiceUrlContextType } from "@/app/_layout";
 
 export interface GetOrdersParams {
   waiter?: string;
@@ -15,7 +13,7 @@ export interface GetOrdersParams {
 }
 
 export const useApi = () => {
-  const { serviceUrl } = useContext(ServiceUrlContext) as ServiceUrlContextType;
+  const serviceUrl = "/api/";
 
   const getAny = async (url: string, options?: { followResults: boolean }) => {
     const followResults =
@@ -164,7 +162,6 @@ export const useApi = () => {
   };
 
   return {
-    serviceUrl,
     getTables,
     getWaiters,
     getFoods,

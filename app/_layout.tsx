@@ -71,37 +71,6 @@ const UserTypeProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export type ServiceUrlContextType = {
-  serviceUrl: string;
-  setServiceUrl: React.Dispatch<React.SetStateAction<string>>;
-};
-export const ServiceUrlContext = createContext<ServiceUrlContextType | null>(
-  null,
-);
-const ServiceUrlProvider = ({ children }: { children: React.ReactNode }) => {
-  const [serviceUrl, setServiceUrl] = useState<string>(
-    "http://192.168.0.118:8000/",
-  );
-
-  useEffect(() => {
-    const retrieve = async () => {
-      const su = await AsyncStorage.getItem("serviceUrl");
-      su && setServiceUrl(su);
-    };
-    retrieve();
-  }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem("serviceUrl", serviceUrl);
-  }, [serviceUrl]);
-
-  return (
-    <ServiceUrlContext.Provider value={{ serviceUrl, setServiceUrl }}>
-      {children}
-    </ServiceUrlContext.Provider>
-  );
-};
-
 const MyDrawer = () => {
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -223,16 +192,14 @@ export default function RootLayout() {
   return (
     <WaiterProvider>
       <UserTypeProvider>
-        <ServiceUrlProvider>
-          <AlertProvider>
-            <PaperProvider theme={Theme}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <MyDrawer />
-                <MyPortal />
-              </GestureHandlerRootView>
-            </PaperProvider>
-          </AlertProvider>
-        </ServiceUrlProvider>
+        <AlertProvider>
+          <PaperProvider theme={Theme}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <MyDrawer />
+              <MyPortal />
+            </GestureHandlerRootView>
+          </PaperProvider>
+        </AlertProvider>
       </UserTypeProvider>
     </WaiterProvider>
   );
