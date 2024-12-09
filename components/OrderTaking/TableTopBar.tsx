@@ -39,7 +39,7 @@ export const TableTopBar = ({
       newTables = newTables.map((table) => ({ number: table.number }));
       setTables(newTables);
       if (newTables && newTables.length > 0 && autoCurrentTable) {
-        if (waiter.from_table.number)
+        if (waiter?.from_table?.number)
           setCurrentTable(
             newTables.find((t) => t.number === waiter.from_table.number) ||
               newTables[0],
