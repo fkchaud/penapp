@@ -1,5 +1,5 @@
 import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { ActivityIndicator, Icon } from "react-native-paper";
+import { ActivityIndicator, Button, Icon } from "react-native-paper";
 import OrderMasonry from "@/components/OrderMasonry";
 import { Order, OrderStatus } from "@/types";
 import React, { useEffect, useState } from "react";
@@ -89,8 +89,15 @@ export const OrderListing = ({
         </Pressable>
       </Modal>
       {beforeComponent}
+      <Button mode="outlined" onPress={retrieveOrders}>
+        Actualizar
+      </Button>
       <View className={"flex-1"}>
-        <OrderMasonry orders={activeOrders()} onPressCard={setCurrentOrder} />
+        <OrderMasonry
+          orders={activeOrders()}
+          onPressCard={setCurrentOrder}
+          onRefresh={retrieveOrders}
+        />
       </View>
       {inactiveOrders().length > 0 && (
         <View
@@ -107,6 +114,7 @@ export const OrderListing = ({
           <OrderMasonry
             orders={inactiveOrders()}
             onPressCard={setCurrentOrder}
+            onRefresh={retrieveOrders}
             inactive={true}
             className={`${hideInactive ? "hidden" : ""}`}
           />

@@ -4,6 +4,7 @@ import StaggeredList from "@mindinventory/react-native-stagger-view";
 
 import { OrderCard } from "@/components/OrderCard";
 import { Order } from "@/types";
+import { useState } from "react";
 
 type Props = {
   orders: Order[];
@@ -16,6 +17,7 @@ type Props = {
   touchableOpacityStyle?: ViewStyle;
   orderCardStyle?: ViewStyle;
   onPressCard: (order: Order) => void;
+  onRefresh: () => Promise<void>;
 };
 
 const OrderMasonry = ({
@@ -29,8 +31,10 @@ const OrderMasonry = ({
   touchableOpacityStyle,
   orderCardStyle,
   onPressCard,
+  onRefresh,
 }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
+  const [refreshing, setRefreshing] = useState(false);
 
   return (
     <StaggeredList
@@ -39,6 +43,11 @@ const OrderMasonry = ({
       animationType={"SLIDE_LEFT"}
       numColumns={Math.floor(screenWidth / maxWidth)}
       data={orders}
+      refreshing={refreshing}
+      onRefresh={() => {
+        setRefreshing(true);
+        onRefresh().then(() => setRefreshing(false));
+      }}
       renderItem={({ item }) => (
         <TouchableOpacity
           onPress={() => onPressCard(item)}
