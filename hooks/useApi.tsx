@@ -13,7 +13,7 @@ export interface GetOrdersParams {
 }
 
 export const useApi = () => {
-  const serviceUrl = "https://localhost/api/";
+  const serviceUrl = "/api/";
 
   const getAny = async (url: string, options?: { followResults: boolean }) => {
     const followResults =

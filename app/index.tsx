@@ -97,7 +97,7 @@ const Index = () => {
               </HelperText>
               <SelectList
                 setSelected={(val: string) => {
-                  if (waiters.length === 0) return;
+                  if (!waiters || waiters.length === 0) return;
                   const wt = waiters.find((w) => w.name == val);
                   if (wt) setWaiter(wt);
                 }}
