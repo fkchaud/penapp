@@ -41,6 +41,19 @@ export const OrderListing = ({
     retrieveOrders().catch(console.error);
   }, [isFocused]);
 
+  let interval: NodeJS.Timeout;
+  useEffect(() => {
+    clearInterval(interval);
+
+    if (isFocused) {
+      interval = setInterval(() => {
+        retrieveOrders().catch(console.error);
+      }, 10000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isFocused]);
+
   const arrowIcon = hideInactive ? "chevron-up" : "chevron-down";
 
   if (!orders) {
