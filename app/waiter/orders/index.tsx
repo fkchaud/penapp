@@ -48,7 +48,7 @@ const Orders = () => {
         </Button>,
       );
     }
-    if (order.last_status.status == "PLACED") {
+    if (["PICKED_UP", "PREPARED"].includes(order.last_status.status)) {
       actions.push(
         <Button
           key="delivered"
