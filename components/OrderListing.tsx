@@ -7,15 +7,17 @@ import { GetOrdersParams, useApi } from "@/hooks/useApi";
 import { useIsFocused } from "@react-navigation/core";
 import { OrderCard } from "@/components/OrderCard";
 
+export type OrderActionsBuilder = (
+  order: Order | null,
+  onActionClose: () => void,
+  onActionRefresh: (order: Order) => void,
+) => React.ReactNode;
 type OrderListingProps = {
   beforeComponent?: React.ReactNode;
   activeOrderStatuses: OrderStatus[];
   inactiveOrderStatuses: OrderStatus[];
   getOrderParams?: GetOrdersParams;
-  orderActionsBuilder: (
-    order: Order | null,
-    onActionCallback: () => void,
-  ) => React.ReactNode[];
+  orderActionsBuilder: OrderActionsBuilder;
 };
 export const OrderListing = ({
   beforeComponent,
@@ -54,6 +56,15 @@ export const OrderListing = ({
     return () => clearInterval(interval);
   }, [isFocused]);
 
+  useEffect(() => {
+    if (!isFocused) return;
+    if (!orders || orders.length === 0) return;
+    if (!currentOrder) return;
+
+    const curOrd = orders.find((o) => o.id == currentOrder.id);
+    if (curOrd) setCurrentOrder(curOrd);
+  }, [orders, isFocused]);
+
   const arrowIcon = hideInactive ? "chevron-up" : "chevron-down";
 
   if (!orders) {
@@ -65,6 +76,14 @@ export const OrderListing = ({
 
   const activeOrders = () => filterOrders(activeOrderStatuses);
   const inactiveOrders = () => filterOrders(inactiveOrderStatuses);
+
+  const onActionClose = () => {
+    setCurrentOrder(null);
+    retrieveOrders().catch(console.error);
+  };
+  const onActionRefresh = () => {
+    retrieveOrders().catch(console.error);
+  };
 
   return (
     <View className={"flex-1"}>
@@ -96,7 +115,11 @@ export const OrderListing = ({
                 <Text className={"text-center"}>X</Text>
               </Pressable>
               <OrderCard order={currentOrder} />
-              {orderActionsBuilder(currentOrder, () => retrieveOrders())}
+              {orderActionsBuilder(
+                currentOrder,
+                onActionClose,
+                onActionRefresh,
+              )}
             </View>
           </Pressable>
         </Pressable>

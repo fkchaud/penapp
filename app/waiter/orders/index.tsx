@@ -14,7 +14,11 @@ const Orders = () => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { updateOrderStatus } = useApi();
 
-  const getActions = (order: Order | null, onActionCallback: () => void) => {
+  const getActions = (
+    order: Order | null,
+    onActionClose: () => void,
+    onActionRefresh: (order: Order) => void,
+  ) => {
     if (!order) return [];
 
     const actions: React.ReactNode[] = [];
@@ -22,12 +26,13 @@ const Orders = () => {
     actions.push(
       <Button
         key="edit"
-        onPress={() =>
+        onPress={() => {
           router.navigate({
             pathname: "/waiter/orders/[id]/edit",
             params: { id: order.id },
-          })
-        }
+          });
+          onActionClose();
+        }}
       >
         Editar
       </Button>,
@@ -41,7 +46,7 @@ const Orders = () => {
             updateOrderStatus({
               orderId: order.id,
               orderStatus: "CANCELED",
-            }).then(onActionCallback)
+            }).then(onActionClose)
           }
         >
           Cancelar
@@ -57,7 +62,7 @@ const Orders = () => {
             updateOrderStatus({
               orderId: order.id,
               orderStatus: "DELIVERED",
-            }).then(onActionCallback)
+            }).then(onActionClose)
           }
         >
           Entregado

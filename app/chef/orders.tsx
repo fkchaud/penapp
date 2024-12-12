@@ -10,7 +10,11 @@ const ChefOrders = () => {
   const { updateOrderStatus } = useApi();
   const router = useRouter();
 
-  const getActions = (order: Order | null, onActionCallback: () => void) => {
+  const getActions = (
+    order: Order | null,
+    onActionClose: () => void,
+    onActionRefresh: (order: Order) => void,
+  ) => {
     if (!order) return [];
 
     const actions: ReactNode[] = [];
@@ -29,7 +33,7 @@ const ChefOrders = () => {
                 orderId: order.id,
                 orderStatus: order.are_food_ready ? "PREPARED" : "PREPARING",
                 areDrinksReady: true,
-              }).then(onActionCallback)
+              }).then(onActionRefresh)
             }
           >
             Bebidas listas
@@ -46,7 +50,7 @@ const ChefOrders = () => {
                 orderId: order.id,
                 orderStatus: order.are_drinks_ready ? "PREPARED" : "PREPARING",
                 areFoodReady: true,
-              }).then(onActionCallback)
+              }).then(onActionRefresh)
             }
           >
             Comida lista
@@ -63,7 +67,7 @@ const ChefOrders = () => {
             updateOrderStatus({
               orderId: order.id,
               orderStatus: "PICKED_UP",
-            }).then(onActionCallback)
+            }).then(onActionClose)
           }
         >
           Retirado por el mozo

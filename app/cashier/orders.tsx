@@ -10,7 +10,11 @@ const CashierOrders = () => {
   const { updateOrderStatus } = useApi();
   const router = useRouter();
 
-  const getActions = (order: Order | null, onActionCallback: () => void) => {
+  const getActions = (
+    order: Order | null,
+    onActionClose: () => void,
+    onActionRefresh: (order: Order) => void,
+  ) => {
     if (!order || order.last_status?.status != "PLACED") return [];
 
     return [
@@ -21,7 +25,7 @@ const CashierOrders = () => {
           updateOrderStatus({
             orderId: order.id,
             orderStatus: "ACCEPTED",
-          }).then(onActionCallback)
+          }).then(onActionClose)
         }
       >
         Aprobar
@@ -33,7 +37,7 @@ const CashierOrders = () => {
           updateOrderStatus({
             orderId: order.id,
             orderStatus: "REJECTED",
-          }).then(onActionCallback)
+          }).then(onActionClose)
         }
       >
         Rechazar
