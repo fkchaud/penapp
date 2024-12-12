@@ -1,4 +1,11 @@
-import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { ActivityIndicator, Button, Icon } from "react-native-paper";
 import OrderMasonry from "@/components/OrderMasonry";
 import { Order, OrderStatus } from "@/types";
@@ -27,6 +34,7 @@ export const OrderListing = ({
   orderActionsBuilder,
 }: OrderListingProps) => {
   const isFocused = useIsFocused();
+  const { width } = useWindowDimensions();
 
   const { getOrders } = useApi();
 
@@ -85,6 +93,12 @@ export const OrderListing = ({
     retrieveOrders().catch(console.error);
   };
 
+  const cardScale = () => {
+    const DEF_MAX_WIDTH = 256 / 0.45;
+    if (width >= DEF_MAX_WIDTH) return 2;
+    else return (2 * width) / DEF_MAX_WIDTH;
+  };
+
   return (
     <View className={"flex-1"}>
       <Modal
@@ -102,9 +116,9 @@ export const OrderListing = ({
         >
           <Pressable className={"cursor-auto"}>
             <View
-              className={"align-middle w-5/6"}
+              className={"align-middle self-center w-5/6"}
               style={{
-                transform: [{ scale: 2 }],
+                transform: [{ scale: cardScale() }],
                 width: 256,
               }}
             >
