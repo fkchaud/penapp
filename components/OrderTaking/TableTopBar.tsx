@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Checkbox from "expo-checkbox";
 import { TopBar } from "@/components/TopBar";
+import { getTableShowable } from "@/utils/tables";
 
 type TableTopBarProps = {
   currentTable: Table | null;
@@ -112,7 +113,7 @@ export const TableTopBar = ({
                   : ""
               }
             >
-              {item.number}
+              {getTableShowable(item.number)}
             </Text>
           </TouchableOpacity>
         )}

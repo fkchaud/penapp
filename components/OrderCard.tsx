@@ -3,6 +3,7 @@ import { Text, View, ViewStyle } from "react-native";
 
 import { Order, OrderStatus } from "@/types";
 import "@/css/global.css";
+import { getTableShowable } from "@/utils/tables";
 
 export const PaymentMethodLabel = {
   CASH: "Efectivo",
@@ -101,7 +102,7 @@ export const OrderCard = ({
             "py-0.5 px-1 border-l border-l-yellow-800/5 bg-yellow-800/40"
           }
         >
-          {order.table && <Text>M{order.table.number}</Text>}
+          {order.table && <Text>{getTableShowable(order.table.number)}</Text>}
         </View>
       </View>
       <View className={"flex-1"}>
