@@ -56,7 +56,6 @@ const CashierOrders = () => {
         "PICKED_UP",
         "REJECTED",
         "DELIVERED",
-        "CANCELED",
       ]}
       beforeComponent={
         <Button
