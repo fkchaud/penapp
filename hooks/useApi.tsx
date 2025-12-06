@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   Item,
   Order,
@@ -19,9 +20,8 @@ export const useApi = () => {
     const followResults =
       !options || !("followResults" in options) || options.followResults; // by default, doesn't follow results
     try {
-      const response = await fetch(url, { method: "GET", redirect: "follow" });
-      const json = await response.json();
-      return followResults ? json.results : json;
+      const response = await axios.get(url);
+      return followResults ? response.data.results : response.data;
     } catch (error) {
       console.error(error);
     }
@@ -68,22 +68,13 @@ export const useApi = () => {
   const placeOrder = async (order: OrderToPlace) => {
     const url = serviceUrl + "place_order/";
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(order),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response.ok) {
-        const json = await response.json();
-        return json.results;
-      } else {
-        console.log(response);
-        const json = await response.json();
-        console.log(json);
-        if (json?.error) throw Error(json?.error);
-      }
-    } catch (error) {
+      const response = await axios.post(url, order);
+      return response.data.results;
+    } catch (error: any) {
       console.error(error);
+      if (error.response?.data?.error) {
+        throw Error(error.response.data.error);
+      }
       throw error;
     }
   };
@@ -91,22 +82,13 @@ export const useApi = () => {
   const updateOrder = async (orderId: number | string, order: OrderToPlace) => {
     const url = serviceUrl + `orders/${orderId}/`;
     try {
-      const response = await fetch(url, {
-        method: "PUT",
-        body: JSON.stringify(order),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response.ok) {
-        const json = await response.json();
-        return json.results;
-      } else {
-        console.log(response);
-        const json = await response.json();
-        console.log(json);
-        if (json?.error) throw Error(json?.error);
-      }
-    } catch (error) {
+      const response = await axios.put(url, order);
+      return response.data.results;
+    } catch (error: any) {
       console.error(error);
+      if (error.response?.data?.error) {
+        throw Error(error.response.data.error);
+      }
       throw error;
     }
   };
@@ -135,12 +117,8 @@ export const useApi = () => {
     if (areDrinksReady) body.are_drinks_ready = areDrinksReady;
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-      });
-      return await response.json();
+      const response = await axios.post(url, body);
+      return response.data;
     } catch (error) {
       console.error(error);
     }
@@ -150,12 +128,8 @@ export const useApi = () => {
     const url = serviceUrl + `waiters/${name}/`;
 
     try {
-      const response = await fetch(url, {
-        method: "PATCH",
-        body: JSON.stringify({ name, from_table, to_table }),
-        headers: { "Content-Type": "application/json" },
-      });
-      return await response.json();
+      const response = await axios.patch(url, { name, from_table, to_table });
+      return response.data;
     } catch (error) {
       console.error(error);
     }

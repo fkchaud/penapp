@@ -143,7 +143,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         onConfirm={() => {
-          let target: Href<string>;
+          let target: Href;
           if (userType == UserType.Chef) target = "/chef/orders";
           else if (userType == UserType.Cashier) target = "/cashier/orders";
           else target = "/";

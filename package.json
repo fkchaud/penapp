@@ -23,7 +23,9 @@
     "@react-navigation/drawer": "^7.1.1",
     "@react-navigation/native": "^7.0.14",
     "@shopify/flash-list": "1.7.3",
+    "@tanstack/react-query": "^5.90.12",
     "@types/react": "~18.3.12",
+    "axios": "^1.13.2",
     "expo": "^52",
     "expo-checkbox": "~4.0.1",
     "expo-constants": "~17.0.8",
@@ -54,6 +56,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@tanstack/eslint-plugin-query": "^5.91.2",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.0.7",
