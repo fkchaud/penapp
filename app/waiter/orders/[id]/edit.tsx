@@ -24,6 +24,7 @@ import {
 } from "@/app/_layout";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
+import { useMutation } from "@tanstack/react-query";
 
 const InternalEditOrder = () => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -172,6 +173,41 @@ const InternalEditOrder = () => {
     };
   };
 
+  const updateOrderMutation = useMutation({
+    mutationFn: (orderData: OrderToPlace) => updateOrder(id, orderData),
+    onSuccess: () => {
+      setOnDismiss(() => router.navigate(`/waiter/orders`));
+      setAlertMessage("Comanda enviada");
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
+
+  // Use React Query mutation for canceling orders
+  const cancelOrderMutation = useMutation({
+    mutationFn: () =>
+      updateOrderStatus({
+        orderId: id,
+        orderStatus: "CANCELED",
+      }),
+    onSuccess: () => {
+      setOnDismiss(() => router.navigate("/waiter/orders"));
+      setAlertMessage("Comanda anulada");
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
+
   if (!order) {
     return <ActivityIndicator size="large" />;
   }
@@ -186,19 +222,8 @@ const InternalEditOrder = () => {
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
-        onConfirm={() => {
-          updateOrder(order.id, buildOrder())
-            .then(() => {
-              setOnDismiss(() => router.navigate(`/waiter/orders`));
-              setAlertMessage("Comanda enviada");
-            })
-            .catch((e) => {
-              console.error(e);
-              setOnDismiss(null);
-              setAlertMessage("Error: " + e);
-            });
-        }}
-        isLoading={false}
+        onConfirm={() => updateOrderMutation.mutate(buildOrder())}
+        isLoading={updateOrderMutation.isPending}
       />
       <Modal
         visible={cancelModalVisible}
@@ -219,21 +244,9 @@ const InternalEditOrder = () => {
               <Button
                 compact={true}
                 mode={"contained"}
-                onPress={() =>
-                  updateOrderStatus({
-                    orderId: order.id,
-                    orderStatus: "CANCELED",
-                  })
-                    .then(() => {
-                      setOnDismiss(() => router.navigate("/waiter/orders"));
-                      setAlertMessage("Comanda anulada");
-                    })
-                    .catch((e) => {
-                      console.error(e);
-                      setOnDismiss(null);
-                      setAlertMessage("Error: " + e);
-                    })
-                }
+                onPress={() => cancelOrderMutation.mutate()}
+                loading={cancelOrderMutation.isPending}
+                disabled={cancelOrderMutation.isPending}
               >
                 Anular pedido
               </Button>
