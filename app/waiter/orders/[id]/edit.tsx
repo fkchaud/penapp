@@ -24,7 +24,7 @@ import {
 } from "@/app/_layout";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const InternalEditOrder = () => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -41,14 +41,82 @@ const InternalEditOrder = () => {
     useState<boolean>(false);
   const [cancelModalVisible, setCancelModalVisible] = useState<boolean>(false);
 
-  const [order, setOrder] = useState<Order | null>(null);
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentType | "">("");
 
-  const [foods, setFoods] = useState<ItemById>({});
-  const [drinks, setDrinks] = useState<ItemById>({});
+  // Use React Query for fetching foods
+  const { data: foodsData } = useQuery({
+    queryKey: ["foods"],
+    queryFn: getFoods,
+    enabled: isFocused,
+  });
+
+  // Use React Query for fetching drinks
+  const { data: drinksData } = useQuery({
+    queryKey: ["drinks"],
+    queryFn: getDrinks,
+    enabled: isFocused,
+  });
+
+  // Use React Query for fetching order
+  const { data: order, isLoading: isLoadingOrder } = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => getOrder(id),
+    enabled: isFocused && !!id,
+  });
+
+  // Transform foods and drinks data to ItemById format
+  const foods: ItemById = foodsData
+    ? foodsData.reduce((acc: ItemById, f: Item) => {
+        acc[f.id] = f;
+        return acc;
+      }, {})
+    : {};
+
+  const drinks: ItemById = drinksData
+    ? drinksData.reduce((acc: ItemById, d: Item) => {
+        acc[d.id] = d;
+        return acc;
+      }, {})
+    : {};
+
+  // Use React Query mutation for updating orders
+  const updateOrderMutation = useMutation({
+    mutationFn: (orderData: OrderToPlace) => updateOrder(id, orderData),
+    onSuccess: () => {
+      setOnDismiss(() => router.navigate(`/waiter/orders`));
+      setAlertMessage("Comanda enviada");
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
+
+  // Use React Query mutation for canceling orders
+  const cancelOrderMutation = useMutation({
+    mutationFn: () =>
+      updateOrderStatus({
+        orderId: id,
+        orderStatus: "CANCELED",
+      }),
+    onSuccess: () => {
+      setOnDismiss(() => router.navigate("/waiter/orders"));
+      setAlertMessage("Comanda anulada");
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
 
   const [foodToOrder, setFoodToOrder] = useState<QuantityByItem>(new Map());
   const addFoodToOrder = (food: Item, quantity: number) => {
@@ -91,66 +159,32 @@ const InternalEditOrder = () => {
     setTotalPrice(price);
   };
 
-  // Get foods and drinks every time the screen is focused
+  // Process order data when order, foods, and drinks are all loaded
   useEffect(() => {
-    const processStuff = async () => {
-      const retrieveFoods = async () => {
-        const newFoods = await getFoods();
-        const foodsToSet = newFoods.reduce((acc: ItemById, f: Item) => {
-          acc[f.id] = f;
-          return acc;
-        }, {});
-        setFoods(foodsToSet);
-        return foodsToSet;
-      };
-      const retrieveDrinks = async () => {
-        const newDrinks = await getDrinks();
-        const drinksToSet = newDrinks.reduce((acc: ItemById, d: Item) => {
-          acc[d.id] = d;
-          return acc;
-        }, {});
-        setDrinks(drinksToSet);
-        return drinksToSet;
-      };
-      const retrieveOrder = async () => {
-        return await getOrder(id);
-      };
+    if (!order || !foodsData || !drinksData) return;
 
-      const promiseFood = retrieveFoods().catch(console.error);
-      const promiseDrinks = retrieveDrinks().catch(console.error);
-      const promiseOrder = retrieveOrder().catch(console.error);
+    const newFoodToOrder = new Map(
+      order.foods.map((ordFood) => {
+        if (foods[ordFood.food.id])
+          return [foods[ordFood.food.id], ordFood.quantity];
+        else return [ordFood.food, ordFood.quantity];
+      }),
+    );
+    setFoodToOrder(newFoodToOrder);
 
-      await Promise.all([promiseFood, promiseDrinks]).then(
-        ([newFoods, newDrinks]) => {
-          promiseOrder.then((ord) => {
-            if (!ord) return;
-            setOrder(ord);
-            const newFoodToOrder = new Map(
-              ord.foods.map((ordFood) => {
-                if (newFoods)
-                  return [newFoods[ordFood.food.id], ordFood.quantity];
-                else return [ordFood.food, ordFood.quantity];
-              }),
-            );
-            setFoodToOrder(newFoodToOrder);
-            const newDrinksToOrder = new Map(
-              ord.drinks.map((ordDrink) => {
-                if (newDrinks)
-                  return [newDrinks[ordDrink.drink.id], ordDrink.quantity];
-                else return [ordDrink.drink, ordDrink.quantity];
-              }),
-            );
-            setDrinksToOrder(newDrinksToOrder);
-            console.log(newFoodToOrder, newDrinksToOrder);
-            setComment(ord.comment);
-            setCurrentTable(ord.table);
-            setPaymentMethod(ord.payment_type);
-          });
-        },
-      );
-    };
-    processStuff();
-  }, [isFocused]);
+    const newDrinksToOrder = new Map(
+      order.drinks.map((ordDrink) => {
+        if (drinks[ordDrink.drink.id])
+          return [drinks[ordDrink.drink.id], ordDrink.quantity];
+        else return [ordDrink.drink, ordDrink.quantity];
+      }),
+    );
+    setDrinksToOrder(newDrinksToOrder);
+
+    setComment(order.comment);
+    setCurrentTable(order.table);
+    setPaymentMethod(order.payment_type);
+  }, [order, foodsData, drinksData]);
 
   const buildOrder: () => OrderToPlace = () => {
     if (!paymentMethod) {
@@ -173,42 +207,7 @@ const InternalEditOrder = () => {
     };
   };
 
-  const updateOrderMutation = useMutation({
-    mutationFn: (orderData: OrderToPlace) => updateOrder(id, orderData),
-    onSuccess: () => {
-      setOnDismiss(() => router.navigate(`/waiter/orders`));
-      setAlertMessage("Comanda enviada");
-    },
-    onError: (error: unknown) => {
-      console.error(error);
-      setOnDismiss(null);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      setAlertMessage("Error: " + errorMessage);
-    },
-  });
-
-  // Use React Query mutation for canceling orders
-  const cancelOrderMutation = useMutation({
-    mutationFn: () =>
-      updateOrderStatus({
-        orderId: id,
-        orderStatus: "CANCELED",
-      }),
-    onSuccess: () => {
-      setOnDismiss(() => router.navigate("/waiter/orders"));
-      setAlertMessage("Comanda anulada");
-    },
-    onError: (error: unknown) => {
-      console.error(error);
-      setOnDismiss(null);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      setAlertMessage("Error: " + errorMessage);
-    },
-  });
-
-  if (!order) {
+  if (isLoadingOrder || !order) {
     return <ActivityIndicator size="large" />;
   }
 
