@@ -3,6 +3,7 @@ import { TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/core";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 import "@/css/global.css";
 import {
@@ -39,8 +40,51 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const [comment, setComment] = useState("");
   const commentInputRef = useRef<TextInput>(null);
 
-  const [foods, setFoods] = useState<ItemById>({});
-  const [drinks, setDrinks] = useState<ItemById>({});
+  // Use React Query for fetching foods
+  const { data: foodsData } = useQuery({
+    queryKey: ["foods"],
+    queryFn: getFoods,
+    enabled: isFocused,
+  });
+
+  // Use React Query for fetching drinks
+  const { data: drinksData } = useQuery({
+    queryKey: ["drinks"],
+    queryFn: getDrinks,
+    enabled: isFocused,
+  });
+
+  // Transform foods and drinks data to ItemById format
+  const foods: ItemById = foodsData
+    ? foodsData.reduce((acc: ItemById, f: Item) => {
+        acc[f.id] = f;
+        return acc;
+      }, {})
+    : {};
+
+  const drinks: ItemById = drinksData
+    ? drinksData.reduce((acc: ItemById, d: Item) => {
+        acc[d.id] = d;
+        return acc;
+      }, {})
+    : {};
+
+  // Use React Query mutation for placing orders
+  const placeOrderMutation = useMutation({
+    mutationFn: placeOrder,
+    onSuccess: () => {
+      setOnDismiss(() => router.navigate("/waiter/orders"));
+      setAlertMessage("Comanda enviada");
+      reset();
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
 
   const buildOrder: () => OrderToPlace = () => {
     if (!paymentMethod) {
@@ -62,30 +106,6 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       comment: comment,
     };
   };
-
-  // Get foods and drinks every time the screen is focused
-  useEffect(() => {
-    const retrieveFoods = async () => {
-      const newFoods = await getFoods();
-      setFoods(
-        newFoods.reduce((acc: ItemById, f: Item) => {
-          acc[f.id] = f;
-          return acc;
-        }, {}),
-      );
-    };
-    const retrieveDrinks = async () => {
-      const newDrinks = await getDrinks();
-      setDrinks(
-        newDrinks.reduce((acc: ItemById, d: Item) => {
-          acc[d.id] = d;
-          return acc;
-        }, {}),
-      );
-    };
-    retrieveFoods().catch(console.error);
-    retrieveDrinks().catch(console.error);
-  }, [isFocused]);
 
   const recalculatePrice = (
     foodToOrder: QuantityByItem,
@@ -140,18 +160,8 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
-        onConfirm={() => {
-          placeOrder(buildOrder())
-            .then(() => {
-              setOnDismiss(() => router.navigate("/waiter/orders"));
-              setAlertMessage("Comanda enviada");
-            })
-            .catch((e) => {
-              console.error(e);
-              setOnDismiss(null);
-              setAlertMessage("Error: " + e);
-            });
-        }}
+        onConfirm={() => placeOrderMutation.mutate(buildOrder())}
+        isLoading={placeOrderMutation.isPending}
       />
       <View
         className={"flex-1"}

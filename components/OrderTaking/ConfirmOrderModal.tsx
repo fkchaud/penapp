@@ -12,6 +12,7 @@ type ConfirmOrderModalProps = {
   paymentMethod: PaymentType | "";
   setPaymentMethod: (paymentMethod: PaymentType) => void;
   onConfirm: () => void;
+  isLoading: boolean;
 };
 export const ConfirmOrderModal = ({
   modalVisible,
@@ -22,6 +23,7 @@ export const ConfirmOrderModal = ({
   paymentMethod,
   setPaymentMethod,
   onConfirm,
+  isLoading,
 }: ConfirmOrderModalProps) => {
   return (
     <Modal
@@ -84,8 +86,9 @@ export const ConfirmOrderModal = ({
             <Button
               compact={true}
               mode={"contained"}
-              disabled={!paymentMethod}
+              disabled={!paymentMethod || isLoading}
               onPress={onConfirm}
+              loading={isLoading}
             >
               Confirmar comanda
             </Button>

@@ -3,8 +3,18 @@ import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider, Portal, Snackbar } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Theme } from "@/constants/Colors";
 import { UserType, WaiterTables } from "@/types";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 export type WaiterContextType = {
   waiter: WaiterTables;
@@ -190,17 +200,19 @@ const MyPortal = () => {
 
 export default function RootLayout() {
   return (
-    <WaiterProvider>
-      <UserTypeProvider>
-        <AlertProvider>
-          <PaperProvider theme={Theme}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <MyDrawer />
-              <MyPortal />
-            </GestureHandlerRootView>
-          </PaperProvider>
-        </AlertProvider>
-      </UserTypeProvider>
-    </WaiterProvider>
+    <QueryClientProvider client={queryClient}>
+      <WaiterProvider>
+        <UserTypeProvider>
+          <AlertProvider>
+            <PaperProvider theme={Theme}>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <MyDrawer />
+                <MyPortal />
+              </GestureHandlerRootView>
+            </PaperProvider>
+          </AlertProvider>
+        </UserTypeProvider>
+      </WaiterProvider>
+    </QueryClientProvider>
   );
 }

@@ -24,6 +24,7 @@ import { Href, router } from "expo-router";
 import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const { setAlertMessage, setOnDismiss } = useContext(
@@ -38,8 +39,56 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const [comment, setComment] = useState("");
   const commentInputRef = useRef<TextInput>(null);
 
-  const [foods, setFoods] = useState<ItemById>({});
-  const [drinks, setDrinks] = useState<ItemById>({});
+  // Use React Query for fetching foods
+  const { data: foodsData, isLoading: isLoadingFoods } = useQuery({
+    queryKey: ["foods"],
+    queryFn: getFoods,
+    enabled: isFocused,
+  });
+
+  // Use React Query for fetching drinks
+  const { data: drinksData, isLoading: isLoadingDrinks } = useQuery({
+    queryKey: ["drinks"],
+    queryFn: getDrinks,
+    enabled: isFocused,
+  });
+
+  // Transform foods and drinks data to ItemById format
+  const foods: ItemById = foodsData
+    ? foodsData.reduce((acc: ItemById, f: Item) => {
+        acc[f.id] = f;
+        return acc;
+      }, {})
+    : {};
+
+  const drinks: ItemById = drinksData
+    ? drinksData.reduce((acc: ItemById, d: Item) => {
+        acc[d.id] = d;
+        return acc;
+      }, {})
+    : {};
+
+  // Use React Query mutation for placing orders
+  const placeOrderMutation = useMutation({
+    mutationFn: placeOrder,
+    onSuccess: () => {
+      let target: Href;
+      if (userType == UserType.Chef) target = "/chef/orders";
+      else if (userType == UserType.Cashier) target = "/cashier/orders";
+      else target = "/";
+
+      setOnDismiss(() => router.navigate(target));
+      setAlertMessage("Comanda agregada");
+      reset();
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      setOnDismiss(null);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setAlertMessage("Error: " + errorMessage);
+    },
+  });
 
   const buildOrder: () => OrderToPlace = () => {
     if (!paymentMethod) {
@@ -62,32 +111,6 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
     if (currentTable) otp.table = currentTable.number;
     return otp;
   };
-
-  // Get foods and drinks every time the screen is focused
-  useEffect(() => {
-    if (!isFocused) return;
-
-    const retrieveFoods = async () => {
-      const newFoods = await getFoods();
-      setFoods(
-        newFoods.reduce((acc: ItemById, f: Item) => {
-          acc[f.id] = f;
-          return acc;
-        }, {}),
-      );
-    };
-    const retrieveDrinks = async () => {
-      const newDrinks = await getDrinks();
-      setDrinks(
-        newDrinks.reduce((acc: ItemById, d: Item) => {
-          acc[d.id] = d;
-          return acc;
-        }, {}),
-      );
-    };
-    retrieveFoods().catch(console.error);
-    retrieveDrinks().catch(console.error);
-  }, [isFocused]);
 
   const recalculatePrice = (
     foodToOrder: QuantityByItem,
@@ -142,23 +165,8 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
-        onConfirm={() => {
-          let target: Href;
-          if (userType == UserType.Chef) target = "/chef/orders";
-          else if (userType == UserType.Cashier) target = "/cashier/orders";
-          else target = "/";
-
-          placeOrder(buildOrder())
-            .then(() => {
-              setOnDismiss(() => router.navigate(target));
-              setAlertMessage("Comanda agregada");
-            })
-            .catch((e) => {
-              console.error(e);
-              setOnDismiss(null);
-              setAlertMessage("Error: " + e);
-            });
-        }}
+        onConfirm={() => placeOrderMutation.mutate(buildOrder())}
+        isLoading={placeOrderMutation.isPending}
       />
       <View
         className={"flex-1"}

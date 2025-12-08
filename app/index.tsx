@@ -11,10 +11,7 @@ import {
 } from "@/app/_layout";
 import { SelectList } from "react-native-dropdown-select-list";
 import { useIsFocused } from "@react-navigation/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useApi } from "@/hooks/useApi";
-
-const queryClient = new QueryClient();
 
 const UserTypeSelector = () => {
   const { userType, setUserType } = useContext(
@@ -89,92 +86,90 @@ const Index = () => {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaView>
-        <ScrollView>
-          <View>
-            <UserTypeSelector />
-            {userType == UserType.Waiter && (
-              <>
-                <HelperText type={"error"} visible={!waiter}>
-                  Seleccione el mozo antes de continuar
-                </HelperText>
-                <SelectList
-                  setSelected={(val: string) => {
-                    if (!waiters || waiters.length === 0) return;
-                    const wt = waiters.find((w) => w.name == val);
-                    if (wt) setWaiter(wt);
-                  }}
-                  data={
-                    waiters?.map((w) => ({ key: w.name, value: w.name })) || []
-                  }
-                  defaultOption={
-                    waiter
-                      ? { key: waiter.name, value: waiter.name }
-                      : undefined
-                  }
-                  save="value"
-                  search={waiters ? waiters.length > 5 : false}
-                  boxStyles={waiter ? {} : { borderColor: "red" }}
-                />
-                <Text />
-                {tables?.length > 0 && waiter && (
-                  <View className={"mt-4"}>
-                    <Text>Mesas que atiende:</Text>
-                    <View className={"flex-row"}>
-                      <TextInput
-                        mode={"outlined"}
-                        label={"Desde"}
-                        inputMode={"numeric"}
-                        value={waiter.from_table.number.toString()}
-                        onChangeText={(text) =>
-                          setTableRange({
-                            min: Number(text),
-                            max: waiter.to_table.number,
-                          })
-                        }
-                        onBlur={() => {
-                          if (
-                            lastUpdatedTables.from == waiter.from_table.number
-                          )
-                            return;
-                          updateWaiter(waiter);
-                          setLastUpdatedTables({
-                            ...lastUpdatedTables,
-                            from: waiter.from_table.number,
-                          });
-                        }}
-                      />
-                      <TextInput
-                        mode={"outlined"}
-                        label={"Hasta"}
-                        inputMode={"numeric"}
-                        value={waiter.to_table.number.toString()}
-                        onChangeText={(text) =>
-                          setTableRange({
-                            min: waiter.from_table.number,
-                            max: Number(text),
-                          })
-                        }
-                        onBlur={() => {
-                          if (lastUpdatedTables.to == waiter.to_table.number)
-                            return;
-                          updateWaiter(waiter);
-                          setLastUpdatedTables({
-                            ...lastUpdatedTables,
-                            to: waiter.to_table.number,
-                          });
-                        }}
-                      />
-                    </View>
+    <SafeAreaView>
+      <ScrollView>
+        <View>
+          <UserTypeSelector />
+          {userType == UserType.Waiter && (
+            <>
+              <HelperText type={"error"} visible={!waiter}>
+                Seleccione el mozo antes de continuar
+              </HelperText>
+              <SelectList
+                setSelected={(val: string) => {
+                  if (!waiters || waiters.length === 0) return;
+                  const wt = waiters.find((w) => w.name == val);
+                  if (wt) setWaiter(wt);
+                }}
+                data={
+                  waiters?.map((w) => ({ key: w.name, value: w.name })) || []
+                }
+                defaultOption={
+                  waiter
+                    ? { key: waiter.name, value: waiter.name }
+                    : undefined
+                }
+                save="value"
+                search={waiters ? waiters.length > 5 : false}
+                boxStyles={waiter ? {} : { borderColor: "red" }}
+              />
+              <Text />
+              {tables?.length > 0 && waiter && (
+                <View className={"mt-4"}>
+                  <Text>Mesas que atiende:</Text>
+                  <View className={"flex-row"}>
+                    <TextInput
+                      mode={"outlined"}
+                      label={"Desde"}
+                      inputMode={"numeric"}
+                      value={waiter.from_table.number.toString()}
+                      onChangeText={(text) =>
+                        setTableRange({
+                          min: Number(text),
+                          max: waiter.to_table.number,
+                        })
+                      }
+                      onBlur={() => {
+                        if (
+                          lastUpdatedTables.from == waiter.from_table.number
+                        )
+                          return;
+                        updateWaiter(waiter);
+                        setLastUpdatedTables({
+                          ...lastUpdatedTables,
+                          from: waiter.from_table.number,
+                        });
+                      }}
+                    />
+                    <TextInput
+                      mode={"outlined"}
+                      label={"Hasta"}
+                      inputMode={"numeric"}
+                      value={waiter.to_table.number.toString()}
+                      onChangeText={(text) =>
+                        setTableRange({
+                          min: waiter.from_table.number,
+                          max: Number(text),
+                        })
+                      }
+                      onBlur={() => {
+                        if (lastUpdatedTables.to == waiter.to_table.number)
+                          return;
+                        updateWaiter(waiter);
+                        setLastUpdatedTables({
+                          ...lastUpdatedTables,
+                          to: waiter.to_table.number,
+                        });
+                      }}
+                    />
                   </View>
-                )}
-              </>
-            )}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </QueryClientProvider>
+                </View>
+              )}
+            </>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

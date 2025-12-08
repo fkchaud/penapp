@@ -198,6 +198,7 @@ const InternalEditOrder = () => {
               setAlertMessage("Error: " + e);
             });
         }}
+        isLoading={false}
       />
       <Modal
         visible={cancelModalVisible}
