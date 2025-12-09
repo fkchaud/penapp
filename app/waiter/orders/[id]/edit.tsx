@@ -25,6 +25,7 @@ import {
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalEditOrder = () => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -45,6 +46,8 @@ const InternalEditOrder = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentType | "">("");
+
+  const { idemKey, regenerateKey } = useIdemKey();
 
   // Use React Query for fetching foods
   const { data: foodsData } = useQuery({
@@ -84,7 +87,8 @@ const InternalEditOrder = () => {
 
   // Use React Query mutation for updating orders
   const updateOrderMutation = useMutation({
-    mutationFn: (orderData: OrderToPlace) => updateOrder(id, orderData),
+    mutationFn: (orderData: OrderToPlace) =>
+      updateOrder(id, orderData, { "Idempotency-Key": idemKey.current || "" }),
     onSuccess: () => {
       setOnDismiss(() => router.navigate(`/waiter/orders`));
       setAlertMessage("Comanda enviada");
@@ -101,10 +105,13 @@ const InternalEditOrder = () => {
   // Use React Query mutation for canceling orders
   const cancelOrderMutation = useMutation({
     mutationFn: () =>
-      updateOrderStatus({
-        orderId: id,
-        orderStatus: "CANCELED",
-      }),
+      updateOrderStatus(
+        {
+          orderId: id,
+          orderStatus: "CANCELED",
+        },
+        { "Idempotency-Key": idemKey.current || "" },
+      ),
     onSuccess: () => {
       setOnDismiss(() => router.navigate("/waiter/orders"));
       setAlertMessage("Comanda anulada");

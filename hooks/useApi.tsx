@@ -84,10 +84,16 @@ export const useApi = () => {
     }
   };
 
-  const updateOrder = async (orderId: number | string, order: OrderToPlace) => {
+  const updateOrder = async (
+    orderId: number | string,
+    order: OrderToPlace,
+    headers?: Record<string, string>,
+  ) => {
     const url = serviceUrl + `orders/${orderId}/`;
     try {
-      const response = await axios.put(url, order);
+      const response = await axios.put(url, order, {
+        headers: { ...(headers ?? {}) },
+      });
       return response.data.results;
     } catch (error: any) {
       console.error(error);
@@ -109,12 +115,15 @@ export const useApi = () => {
     are_food_ready?: boolean;
     are_drinks_ready?: boolean;
   }
-  const updateOrderStatus = async ({
-    orderId,
-    orderStatus,
-    areFoodReady,
-    areDrinksReady,
-  }: UpdateOrderStatusParams) => {
+  const updateOrderStatus = async (
+    {
+      orderId,
+      orderStatus,
+      areFoodReady,
+      areDrinksReady,
+    }: UpdateOrderStatusParams,
+    headers?: Record<string, string>,
+  ) => {
     const url = serviceUrl + `orders/${orderId}/update_status`;
 
     const body: UpdateOrderStatusApiParams = { status: orderStatus };
@@ -122,7 +131,9 @@ export const useApi = () => {
     if (areDrinksReady) body.are_drinks_ready = areDrinksReady;
 
     try {
-      const response = await axios.post(url, body);
+      const response = await axios.post(url, body, {
+        headers: { ...(headers ?? {}) },
+      });
       return response.data;
     } catch (error) {
       console.error(error);
