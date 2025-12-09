@@ -65,10 +65,15 @@ export const useApi = () => {
     return await getAny(url, { followResults: false });
   };
 
-  const placeOrder = async (order: OrderToPlace) => {
+  const placeOrder = async (
+    order: OrderToPlace,
+    headers?: Record<string, string>,
+  ) => {
     const url = serviceUrl + "place_order/";
     try {
-      const response = await axios.post(url, order);
+      const response = await axios.post(url, order, {
+        headers: { ...(headers ?? {}) },
+      });
       return response.data.results;
     } catch (error: any) {
       console.error(error);

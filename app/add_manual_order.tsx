@@ -25,6 +25,7 @@ import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const { setAlertMessage, setOnDismiss } = useContext(
@@ -38,6 +39,12 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
   const commentInputRef = useRef<TextInput>(null);
+
+  const { idemKey, regenerateKey } = useIdemKey();
+
+  useEffect(() => {
+    regenerateKey();
+  }, [isFocused, currentTable, totalPrice, comment, userType]);
 
   // Use React Query for fetching foods
   const { data: foodsData, isLoading: isLoadingFoods } = useQuery({
@@ -70,7 +77,8 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
 
   // Use React Query mutation for placing orders
   const placeOrderMutation = useMutation({
-    mutationFn: placeOrder,
+    mutationFn: (order: OrderToPlace) =>
+      placeOrder(order, { "Idempotency-Key": idemKey.current || "" }),
     onSuccess: () => {
       let target: Href;
       if (userType == UserType.Chef) target = "/chef/orders";
@@ -80,6 +88,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
       setOnDismiss(() => router.navigate(target));
       setAlertMessage("Comanda agregada");
       reset();
+      regenerateKey();
     },
     onError: (error: unknown) => {
       console.error(error);

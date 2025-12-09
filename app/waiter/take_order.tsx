@@ -26,6 +26,7 @@ import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
+import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
@@ -39,6 +40,12 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
   const commentInputRef = useRef<TextInput>(null);
+
+  const { idemKey, regenerateKey } = useIdemKey();
+
+  useEffect(() => {
+    regenerateKey();
+  }, [isFocused, currentTable, totalPrice, comment]);
 
   // Use React Query for fetching foods
   const { data: foodsData } = useQuery({
@@ -71,10 +78,12 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
 
   // Use React Query mutation for placing orders
   const placeOrderMutation = useMutation({
-    mutationFn: placeOrder,
+    mutationFn: (order: OrderToPlace) =>
+      placeOrder(order, { "Idempotency-Key": idemKey.current || "" }),
     onSuccess: () => {
       setOnDismiss(() => router.navigate("/waiter/orders"));
       setAlertMessage("Comanda enviada");
+      regenerateKey();
       reset();
     },
     onError: (error: unknown) => {
