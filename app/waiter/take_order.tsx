@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
-import { router } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/core";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -27,14 +26,30 @@ import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
 import { useIdemKey } from "@/hooks/useIdemKey";
+import { useRouter } from "expo-router";
 
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
+  const router = useRouter();
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
     AlertContext,
   ) as AlertContextType;
   const isFocused = useIsFocused();
   const { getDrinks, getFoods, placeOrder } = useApi();
+
+  // Guard: redirect if no waiter is selected when screen is focused
+  useEffect(() => {
+    if (!isFocused) return;
+
+    // Give a small delay to allow AsyncStorage to load waiter
+    const timeoutId = setTimeout(() => {
+      if (!waiter) {
+        router.replace("/");
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [isFocused, waiter, router]);
 
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -99,6 +114,9 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     if (!paymentMethod) {
       console.error("Empty payment method");
       throw Error("Empty payment method");
+    }
+    if (!waiter) {
+      throw Error("No waiter selected");
     }
     return {
       waiter: waiter.name,

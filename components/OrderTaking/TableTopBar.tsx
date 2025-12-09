@@ -54,8 +54,8 @@ export const TableTopBar = ({
   if (
     currentTable &&
     !enableAllTables &&
-    (currentTable.number < waiter.from_table.number ||
-      currentTable.number > waiter.to_table.number)
+    (currentTable.number < waiter?.from_table?.number ||
+      currentTable.number > waiter?.to_table?.number)
   ) {
     setEnableAllTables(true);
   }

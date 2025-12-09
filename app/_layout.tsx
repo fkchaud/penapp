@@ -132,7 +132,7 @@ const MyDrawer = () => {
           drawerLabel: "Ver pedidos",
           title: `Pedidos (${waiter ? waiter.name : "Mozos"})`,
           drawerItemStyle: {
-            display: userType == UserType.Waiter ? "flex" : "none",
+            display: userType == UserType.Waiter && !!waiter ? "flex" : "none",
           },
         }}
       />
