@@ -24,7 +24,7 @@ import {
 } from "@/app/_layout";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalEditOrder = () => {
@@ -63,6 +63,16 @@ const InternalEditOrder = () => {
     enabled: isFocused,
   });
 
+  const queryClient = useQueryClient();
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["foods"] });
+    queryClient.invalidateQueries({ queryKey: ["drinks"] });
+  };
+  useEffect(() => {
+    invalidateQueries();
+    return () => invalidateQueries();
+  }, [isFocused]);
+
   // Use React Query for fetching order
   const { data: order, isLoading: isLoadingOrder } = useQuery({
     queryKey: ["order", id],
@@ -90,6 +100,7 @@ const InternalEditOrder = () => {
     mutationFn: (orderData: OrderToPlace) =>
       updateOrder(id, orderData, { "Idempotency-Key": idemKey.current || "" }),
     onSuccess: () => {
+      invalidateQueries();
       setOnDismiss(() => router.navigate(`/waiter/orders`));
       setAlertMessage("Comanda enviada");
     },
@@ -99,6 +110,7 @@ const InternalEditOrder = () => {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       setAlertMessage("Error: " + errorMessage);
+      invalidateQueries();
     },
   });
 
@@ -115,6 +127,7 @@ const InternalEditOrder = () => {
     onSuccess: () => {
       setOnDismiss(() => router.navigate("/waiter/orders"));
       setAlertMessage("Comanda anulada");
+      invalidateQueries();
     },
     onError: (error: unknown) => {
       console.error(error);
@@ -122,6 +135,7 @@ const InternalEditOrder = () => {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       setAlertMessage("Error: " + errorMessage);
+      invalidateQueries();
     },
   });
 

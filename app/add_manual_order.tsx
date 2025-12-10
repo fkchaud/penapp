@@ -24,7 +24,7 @@ import { Href, router } from "expo-router";
 import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { ConfirmBottomBar } from "@/components/OrderTaking/ConfirmBottomBar";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
@@ -60,6 +60,16 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
     enabled: isFocused,
   });
 
+  const queryClient = useQueryClient();
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["foods"] });
+    queryClient.invalidateQueries({ queryKey: ["drinks"] });
+  };
+  useEffect(() => {
+    invalidateQueries();
+    return () => invalidateQueries();
+  }, [isFocused]);
+
   // Transform foods and drinks data to ItemById format
   const foods: ItemById = foodsData
     ? foodsData.reduce((acc: ItemById, f: Item) => {
@@ -85,6 +95,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
       else if (userType == UserType.Cashier) target = "/cashier/orders";
       else target = "/";
 
+      invalidateQueries();
       setOnDismiss(() => router.navigate(target));
       setAlertMessage("Comanda agregada");
       reset();
@@ -96,6 +107,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       setAlertMessage("Error: " + errorMessage);
+      invalidateQueries();
     },
   });
 

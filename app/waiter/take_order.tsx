@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/core";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import "@/css/global.css";
 import {
@@ -36,6 +36,15 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   ) as AlertContextType;
   const isFocused = useIsFocused();
   const { getDrinks, getFoods, placeOrder } = useApi();
+  const queryClient = useQueryClient();
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["foods"] });
+    queryClient.invalidateQueries({ queryKey: ["drinks"] });
+  };
+  useEffect(() => {
+    invalidateQueries();
+    return () => invalidateQueries();
+  }, [isFocused]);
 
   // Guard: redirect if no waiter is selected when screen is focused
   useEffect(() => {
@@ -67,6 +76,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     queryKey: ["foods"],
     queryFn: getFoods,
     enabled: isFocused,
+    refetchOnWindowFocus: true,
   });
 
   // Use React Query for fetching drinks
@@ -74,6 +84,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     queryKey: ["drinks"],
     queryFn: getDrinks,
     enabled: isFocused,
+    refetchOnWindowFocus: true,
   });
 
   // Transform foods and drinks data to ItemById format
@@ -96,6 +107,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
     mutationFn: (order: OrderToPlace) =>
       placeOrder(order, { "Idempotency-Key": idemKey.current || "" }),
     onSuccess: () => {
+      invalidateQueries();
       setOnDismiss(() => router.navigate("/waiter/orders"));
       setAlertMessage("Comanda enviada");
       regenerateKey();
@@ -107,6 +119,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       setAlertMessage("Error: " + errorMessage);
+      invalidateQueries();
     },
   });
 
