@@ -5,8 +5,59 @@ import { useRouter } from "expo-router";
 import { WaiterContext, WaiterContextType } from "@/app/_layout";
 import { OrderListing } from "@/components/OrderListing";
 import { useApi } from "@/hooks/useApi";
-import { Order } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import "@/css/global.css";
+import { useMutation } from "@tanstack/react-query";
+
+const OrderStatusActionButton = ({
+  key,
+  text,
+  order,
+  targetStatus,
+  onFinishAction,
+}: {
+  key: string;
+  text: string;
+  order: Order;
+  targetStatus: OrderStatus;
+  onFinishAction: () => void;
+}) => {
+  const { updateOrderStatus } = useApi();
+
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: ({
+      order,
+      orderStatus,
+    }: {
+      order: Order;
+      orderStatus: OrderStatus;
+    }) => updateOrderStatus({ orderId: order.id, orderStatus: orderStatus }),
+    onSuccess: () => {
+      onFinishAction();
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      onFinishAction();
+    },
+  });
+
+  return (
+    <Button
+      key={key}
+      mode="contained"
+      onPress={() =>
+        updateOrderStatusMutation.mutate({
+          order: order,
+          orderStatus: targetStatus,
+        })
+      }
+      loading={updateOrderStatusMutation.isPending}
+      disabled={updateOrderStatusMutation.isPending}
+    >
+      {text}
+    </Button>
+  );
+};
 
 const Orders = () => {
   const router = useRouter();
@@ -39,34 +90,24 @@ const Orders = () => {
     );
     if (order.last_status.status == "PLACED") {
       actions.push(
-        <Button
-          key="cancel"
-          mode="contained"
-          onPress={() =>
-            updateOrderStatus({
-              orderId: order.id,
-              orderStatus: "CANCELED",
-            }).then(onActionClose)
-          }
-        >
-          Cancelar
-        </Button>,
+        <OrderStatusActionButton
+          key={"cancel"}
+          order={order}
+          onFinishAction={onActionClose}
+          targetStatus={"CANCELED"}
+          text={"Cancelar"}
+        />,
       );
     }
     if (["PICKED_UP", "PREPARED"].includes(order.last_status.status)) {
       actions.push(
-        <Button
-          key="delivered"
-          mode="contained"
-          onPress={() =>
-            updateOrderStatus({
-              orderId: order.id,
-              orderStatus: "DELIVERED",
-            }).then(onActionClose)
-          }
-        >
-          Entregado
-        </Button>,
+        <OrderStatusActionButton
+          key={"delivered"}
+          order={order}
+          onFinishAction={onActionClose}
+          targetStatus={"DELIVERED"}
+          text={"Entregado"}
+        />,
       );
     }
 
