@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { GetOrdersParams, useApi } from "@/hooks/useApi";
 import { useIsFocused } from "@react-navigation/core";
 import { OrderCard } from "@/components/OrderCard";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type OrderActionsBuilder = (
   order: Order | null,
@@ -34,34 +35,26 @@ export const OrderListing = ({
   orderActionsBuilder,
 }: OrderListingProps) => {
   const isFocused = useIsFocused();
+  const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
 
   const { getOrders } = useApi();
+  const { data: orders } = useQuery({
+    queryKey: ["orders", getOrderParams],
+    queryFn: async () => getOrders(getOrderParams),
+    refetchInterval: 10000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+  });
+  const invalidateOrders = () =>
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
 
-  const [orders, setOrders] = useState<Order[] | null>(null);
   const [hideInactive, setHideInactive] = useState(true);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
-  const retrieveOrders = async () => {
-    const newOrders = await getOrders(getOrderParams);
-    setOrders(newOrders || []);
-  };
   useEffect(() => {
     if (!isFocused) return;
-    retrieveOrders().catch(console.error);
-  }, [isFocused]);
-
-  let interval: NodeJS.Timeout;
-  useEffect(() => {
-    clearInterval(interval);
-
-    if (isFocused) {
-      interval = setInterval(() => {
-        retrieveOrders().catch(console.error);
-      }, 10000);
-    }
-
-    return () => clearInterval(interval);
+    invalidateOrders();
   }, [isFocused]);
 
   useEffect(() => {
@@ -87,10 +80,10 @@ export const OrderListing = ({
 
   const onActionClose = () => {
     setCurrentOrder(null);
-    retrieveOrders().catch(console.error);
+    invalidateOrders();
   };
   const onActionRefresh = () => {
-    retrieveOrders().catch(console.error);
+    invalidateOrders();
   };
 
   const cardScale = () => {
@@ -139,14 +132,14 @@ export const OrderListing = ({
         </Pressable>
       </Modal>
       {beforeComponent}
-      <Button mode="outlined" onPress={retrieveOrders}>
+      <Button mode="outlined" onPress={invalidateOrders}>
         Actualizar
       </Button>
       <View className={"flex-1"}>
         <OrderMasonry
           orders={activeOrders()}
           onPressCard={setCurrentOrder}
-          onRefresh={retrieveOrders}
+          onRefresh={invalidateOrders}
         />
       </View>
       {inactiveOrders().length > 0 && (
@@ -164,7 +157,7 @@ export const OrderListing = ({
           <OrderMasonry
             orders={inactiveOrders()}
             onPressCard={setCurrentOrder}
-            onRefresh={retrieveOrders}
+            onRefresh={invalidateOrders}
             inactive={true}
             className={`${hideInactive ? "hidden" : ""}`}
           />

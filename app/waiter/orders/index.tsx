@@ -63,7 +63,6 @@ const Orders = () => {
   const router = useRouter();
 
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
-  const { updateOrderStatus } = useApi();
 
   const getActions = (
     order: Order | null,

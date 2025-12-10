@@ -53,7 +53,9 @@ export const useApi = () => {
     return await getAny(url);
   };
 
-  const getOrders = async ({ waiter, status }: GetOrdersParams = {}) => {
+  const getOrders = async ({ waiter, status }: GetOrdersParams = {}): Promise<
+    Order[]
+  > => {
     let url = serviceUrl + "orders/";
     if (waiter || status) {
       url += "?";
