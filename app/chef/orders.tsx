@@ -3,8 +3,46 @@ import { Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 
 import { OrderListing } from "@/components/OrderListing";
-import { useApi } from "@/hooks/useApi";
-import { Order } from "@/types";
+import { UpdateOrderStatusParams, useApi } from "@/hooks/useApi";
+import { Order, OrderStatus } from "@/types";
+import { useMutation } from "@tanstack/react-query";
+
+const ActionButton = ({
+  key,
+  text,
+  apiParams,
+  onFinishAction,
+}: {
+  key: string;
+  text: string;
+  apiParams: UpdateOrderStatusParams;
+  onFinishAction: () => void;
+}) => {
+  const { updateOrderStatus } = useApi();
+
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: (data: UpdateOrderStatusParams) => updateOrderStatus(data),
+    onSuccess: () => {
+      onFinishAction();
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      onFinishAction();
+    },
+  });
+
+  return (
+    <Button
+      key={key}
+      mode="contained"
+      onPress={() => updateOrderStatusMutation.mutate(apiParams)}
+      loading={updateOrderStatusMutation.isPending}
+      disabled={updateOrderStatusMutation.isPending}
+    >
+      {text}
+    </Button>
+  );
+};
 
 const ChefOrders = () => {
   const { updateOrderStatus } = useApi();
@@ -25,53 +63,44 @@ const ChefOrders = () => {
     ) {
       if (!order.are_drinks_ready) {
         actions.push(
-          <Button
+          <ActionButton
             key="drinks-ready"
-            mode="contained"
-            onPress={() =>
-              updateOrderStatus({
-                orderId: order.id,
-                orderStatus: order.are_food_ready ? "PREPARED" : "PREPARING",
-                areDrinksReady: true,
-              }).then(onActionRefresh)
-            }
-          >
-            Bebidas listas
-          </Button>,
+            text="Bebidas listas"
+            apiParams={{
+              orderId: order.id,
+              orderStatus: order.are_food_ready ? "PREPARED" : "PREPARING",
+              areDrinksReady: true,
+            }}
+            onFinishAction={() => onActionRefresh(order)}
+          />,
         );
       }
       if (!order.are_food_ready) {
         actions.push(
-          <Button
+          <ActionButton
             key="food-ready"
-            mode="contained"
-            onPress={() =>
-              updateOrderStatus({
-                orderId: order.id,
-                orderStatus: order.are_drinks_ready ? "PREPARED" : "PREPARING",
-                areFoodReady: true,
-              }).then(onActionRefresh)
-            }
-          >
-            Comida lista
-          </Button>,
+            text="Comida lista"
+            apiParams={{
+              orderId: order.id,
+              orderStatus: order.are_drinks_ready ? "PREPARED" : "PREPARING",
+              areFoodReady: true,
+            }}
+            onFinishAction={() => onActionRefresh(order)}
+          />,
         );
       }
     }
     if (order.last_status.status == "PREPARED") {
       actions.push(
-        <Button
-          key="drinks-ready"
-          mode="contained"
-          onPress={() =>
-            updateOrderStatus({
-              orderId: order.id,
-              orderStatus: "PICKED_UP",
-            }).then(onActionClose)
-          }
-        >
-          Retirado por el mozo
-        </Button>,
+        <ActionButton
+          key={"picked-up"}
+          text={"Retirado por el mozo"}
+          apiParams={{
+            orderId: order.id,
+            orderStatus: "PICKED_UP",
+          }}
+          onFinishAction={onActionClose}
+        />,
       );
     }
     return actions;

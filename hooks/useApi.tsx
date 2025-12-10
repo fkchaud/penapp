@@ -12,6 +12,12 @@ export interface GetOrdersParams {
   waiter?: string;
   status?: OrderStatus | OrderStatus[];
 }
+export interface UpdateOrderStatusParams {
+  orderId: number | string;
+  orderStatus: OrderStatus;
+  areFoodReady?: boolean;
+  areDrinksReady?: boolean;
+}
 
 export const useApi = () => {
   const serviceUrl = "/api/";
@@ -104,12 +110,6 @@ export const useApi = () => {
     }
   };
 
-  interface UpdateOrderStatusParams {
-    orderId: number | string;
-    orderStatus: OrderStatus;
-    areFoodReady?: boolean;
-    areDrinksReady?: boolean;
-  }
   interface UpdateOrderStatusApiParams {
     status: OrderStatus;
     are_food_ready?: boolean;
