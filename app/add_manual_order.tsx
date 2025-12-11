@@ -183,6 +183,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
         setModalVisible={setModalVisible}
         foodToOrder={foodToOrder}
         drinksToOrder={drinksToOrder}
+        table={currentTable}
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
@@ -218,6 +219,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
           cancelText={"Limpiar"}
           onCancel={reset}
           onContinue={() => setModalVisible(true)}
+          isEnabled={totalPrice > 0 && !!currentTable}
         />
       </View>
     </PaperProvider>

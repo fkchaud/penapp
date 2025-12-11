@@ -7,7 +7,7 @@ export type OrderStatus =
   | "PICKED_UP"
   | "DELIVERED"
   | "CANCELED";
-export type PaymentType = "CASH" | "TRANSFER" | "MERCADOPAGO";
+export type PaymentType = "CASH" | "TRANSFER" | "MERCADOPAGO" | "VOUCHER";
 
 export type Waiter = {
   name: string;

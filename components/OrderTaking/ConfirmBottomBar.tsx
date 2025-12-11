@@ -11,6 +11,7 @@ type ConfirmBottomBarProps = {
   cancelText: string;
   onCancel: () => void;
   onContinue: () => void;
+  isEnabled: boolean;
 };
 export const ConfirmBottomBar = ({
   commentInputRef,
@@ -20,6 +21,7 @@ export const ConfirmBottomBar = ({
   cancelText,
   onCancel,
   onContinue,
+  isEnabled,
 }: ConfirmBottomBarProps) => {
   return (
     <BottomBar>
@@ -39,7 +41,12 @@ export const ConfirmBottomBar = ({
         <Button mode={"outlined"} onPress={onCancel} style={{ flex: 1 }}>
           {cancelText}
         </Button>
-        <Button mode={"contained"} onPress={onContinue} style={{ flex: 2 }}>
+        <Button
+          mode={"contained"}
+          onPress={onContinue}
+          style={{ flex: 2 }}
+          disabled={!isEnabled}
+        >
           Continuar
         </Button>
       </View>

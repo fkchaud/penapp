@@ -1,13 +1,15 @@
-import { PaymentType, QuantityByItem } from "@/types";
+import { PaymentType, QuantityByItem, Table } from "@/types";
 import { Modal, Text, View } from "react-native";
 import RadioGroup from "react-native-radio-buttons-group";
 import { Button } from "react-native-paper";
+import { isVoucherTable } from "@/utils/tables";
 
 type ConfirmOrderModalProps = {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
   foodToOrder: QuantityByItem;
   drinksToOrder: QuantityByItem;
+  table: Table | null;
   totalPrice: number;
   paymentMethod: PaymentType | "";
   setPaymentMethod: (paymentMethod: PaymentType) => void;
@@ -19,6 +21,7 @@ export const ConfirmOrderModal = ({
   setModalVisible,
   foodToOrder,
   drinksToOrder,
+  table,
   totalPrice,
   paymentMethod,
   setPaymentMethod,
@@ -70,7 +73,20 @@ export const ConfirmOrderModal = ({
                   borderColor: "#909090",
                   size: 16,
                 },
-              ]}
+              ].concat(
+                table && isVoucherTable(table.number)
+                  ? [
+                      {
+                        id: "VOUCHER",
+                        label: "Voucher",
+                        value: "VOUCHER",
+                        borderSize: 1.5,
+                        borderColor: "#909090",
+                        size: 16,
+                      },
+                    ]
+                  : [],
+              )}
               onPress={(selectedId) =>
                 setPaymentMethod(selectedId as PaymentType)
               }

@@ -1,16 +1,20 @@
 import { Chip, Icon } from "react-native-paper";
 import { Text, View, ViewStyle } from "react-native";
 
-import { Order, OrderStatus } from "@/types";
+import { Order, OrderStatus, PaymentType } from "@/types";
 import "@/css/global.css";
 import { getTableShowable } from "@/utils/tables";
 
-export const PaymentMethodLabel = {
+export const PaymentMethodLabel: Record<PaymentType, string> = {
   CASH: "Efectivo",
   TRANSFER: "Transferencia",
   MERCADOPAGO: "Mercado Pago",
+  VOUCHER: "Voucher",
 };
-export const PaymentMethodIcon = {
+export const PaymentMethodIcon: Record<
+  PaymentType,
+  { name: string; lightColor: string; darkColor: string }
+> = {
   CASH: { name: "cash", lightColor: "black", darkColor: "white" },
   TRANSFER: { name: "bank-transfer", lightColor: "black", darkColor: "white" },
   MERCADOPAGO: {
@@ -18,6 +22,7 @@ export const PaymentMethodIcon = {
     lightColor: "black",
     darkColor: "white",
   },
+  VOUCHER: { name: "wallet-giftcard", lightColor: "black", darkColor: "white" },
 };
 const StatusLabels: Record<
   OrderStatus,

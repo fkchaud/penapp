@@ -45,7 +45,6 @@ const ActionButton = ({
 };
 
 const ChefOrders = () => {
-  const { updateOrderStatus } = useApi();
   const router = useRouter();
 
   const getActions = (

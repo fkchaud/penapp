@@ -239,6 +239,7 @@ const InternalEditOrder = () => {
         setModalVisible={setConfirmModalVisible}
         foodToOrder={foodToOrder}
         drinksToOrder={drinksToOrder}
+        table={currentTable}
         totalPrice={totalPrice}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
@@ -309,6 +310,7 @@ const InternalEditOrder = () => {
           cancelText={"Anular"}
           onCancel={() => setCancelModalVisible(true)}
           onContinue={() => setConfirmModalVisible(true)}
+          isEnabled={totalPrice > 0 && !!currentTable}
         />
       </View>
     </PaperProvider>

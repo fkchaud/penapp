@@ -1,7 +1,12 @@
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HelperText, SegmentedButtons, TextInput } from "react-native-paper";
-import { useContext, useEffect, useState } from "react";
+import {
+  Button,
+  HelperText,
+  SegmentedButtons,
+  TextInput,
+} from "react-native-paper";
+import React, { useContext, useEffect, useState } from "react";
 import { Table, UserType, UserTypeByKey, WaiterTables } from "@/types";
 import {
   UserTypeContext,
@@ -12,6 +17,7 @@ import {
 import { SelectList } from "react-native-dropdown-select-list";
 import { useIsFocused } from "@react-navigation/core";
 import { useApi } from "@/hooks/useApi";
+import { useRouter } from "expo-router";
 
 const UserTypeSelector = () => {
   const { userType, setUserType } = useContext(
@@ -44,6 +50,7 @@ const Index = () => {
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter, setWaiter } = useContext(WaiterContext) as WaiterContextType;
   const isFocused = useIsFocused();
+  const router = useRouter();
   const { getTables, getWaiters, updateWaiter } = useApi();
 
   const [waiters, setWaiters] = useState<WaiterTables[]>([]);
@@ -105,9 +112,7 @@ const Index = () => {
                   waiters?.map((w) => ({ key: w.name, value: w.name })) || []
                 }
                 defaultOption={
-                  waiter
-                    ? { key: waiter.name, value: waiter.name }
-                    : undefined
+                  waiter ? { key: waiter.name, value: waiter.name } : undefined
                 }
                 save="value"
                 search={waiters ? waiters.length > 5 : false}
@@ -130,9 +135,7 @@ const Index = () => {
                         })
                       }
                       onBlur={() => {
-                        if (
-                          lastUpdatedTables.from == waiter.from_table.number
-                        )
+                        if (lastUpdatedTables.from == waiter.from_table.number)
                           return;
                         updateWaiter(waiter);
                         setLastUpdatedTables({
@@ -165,6 +168,57 @@ const Index = () => {
                   </View>
                 </View>
               )}
+              {waiter && (
+                <>
+                  <Button
+                    mode={"contained"}
+                    onPress={() => router.navigate("/waiter/take_order")}
+                    className={"mt-4"}
+                  >
+                    Tomar pedido
+                  </Button>
+                  <Button
+                    mode={"contained-tonal"}
+                    onPress={() => router.navigate("/waiter/orders")}
+                  >
+                    Ver pedidos
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+          {userType == UserType.Chef && (
+            <>
+              <Button
+                mode={"contained"}
+                onPress={() => router.navigate("/chef/orders")}
+                className={"mt-4"}
+              >
+                Ver pedidos
+              </Button>
+              <Button
+                mode={"contained-tonal"}
+                onPress={() => router.navigate("/add_manual_order")}
+              >
+                Agregar pedido manual
+              </Button>
+            </>
+          )}
+          {userType == UserType.Cashier && (
+            <>
+              <Button
+                mode={"contained"}
+                onPress={() => router.navigate("/cashier/orders")}
+                className={"mt-4"}
+              >
+                Ver pedidos
+              </Button>
+              <Button
+                mode={"contained-tonal"}
+                onPress={() => router.navigate("/add_manual_order")}
+              >
+                Agregar pedido manual
+              </Button>
             </>
           )}
         </View>
