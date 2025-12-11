@@ -76,13 +76,13 @@ export const useApi = () => {
   const placeOrder = async (
     order: OrderToPlace,
     headers?: Record<string, string>,
-  ) => {
+  ): Promise<{ orderId: number }> => {
     const url = serviceUrl + "place_order/";
     try {
       const response = await axios.post(url, order, {
         headers: { ...(headers ?? {}) },
       });
-      return response.data.results;
+      return response.data;
     } catch (error: any) {
       console.error(error);
       if (error.response?.data?.error) {

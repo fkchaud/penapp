@@ -89,7 +89,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const placeOrderMutation = useMutation({
     mutationFn: (order: OrderToPlace) =>
       placeOrder(order, { "Idempotency-Key": idemKey.current || "" }),
-    onSuccess: () => {
+    onSuccess: (response) => {
       let target: Href;
       if (userType == UserType.Chef) target = "/chef/orders";
       else if (userType == UserType.Cashier) target = "/cashier/orders";
@@ -97,7 +97,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
 
       invalidateQueries();
       setOnDismiss(() => router.navigate(target));
-      setAlertMessage("Comanda agregada");
+      setAlertMessage(`Comanda agregada: #${response.orderId}`);
       reset();
       regenerateKey();
     },

@@ -106,10 +106,10 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const placeOrderMutation = useMutation({
     mutationFn: (order: OrderToPlace) =>
       placeOrder(order, { "Idempotency-Key": idemKey.current || "" }),
-    onSuccess: () => {
+    onSuccess: (response) => {
       invalidateQueries();
       setOnDismiss(() => router.navigate("/waiter/orders"));
-      setAlertMessage("Comanda enviada");
+      setAlertMessage(`Comanda enviada: #${response.orderId}`);
       regenerateKey();
       reset();
     },
