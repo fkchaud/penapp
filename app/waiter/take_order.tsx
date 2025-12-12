@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/core";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import "@/css/global.css";
 import {
@@ -17,6 +17,8 @@ import { Theme } from "@/constants/Colors";
 import {
   AlertContext,
   AlertContextType,
+  UserTypeContext,
+  UserTypeContextType,
   WaiterContext,
   WaiterContextType,
 } from "@/app/_layout";
@@ -30,6 +32,7 @@ import { useRouter } from "expo-router";
 
 const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const router = useRouter();
+  const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
     AlertContext,
@@ -144,6 +147,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
       })),
       payment_type: paymentMethod,
       comment: comment,
+      user_type: userType,
     };
   };
 

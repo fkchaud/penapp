@@ -128,6 +128,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
       })),
       payment_type: paymentMethod,
       comment: comment,
+      user_type: userType,
     };
     if (currentTable) otp.table = currentTable.number;
     return otp;

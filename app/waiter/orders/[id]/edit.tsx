@@ -19,6 +19,8 @@ import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import {
   AlertContext,
   AlertContextType,
+  UserTypeContext,
+  UserTypeContextType,
   WaiterContext,
   WaiterContextType,
 } from "@/app/_layout";
@@ -28,6 +30,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIdemKey } from "@/hooks/useIdemKey";
 
 const InternalEditOrder = () => {
+  const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
   const { setAlertMessage, setOnDismiss } = useContext(
     AlertContext,
@@ -225,6 +228,7 @@ const InternalEditOrder = () => {
       })),
       payment_type: paymentMethod,
       comment: comment,
+      user_type: userType,
     };
   };
 

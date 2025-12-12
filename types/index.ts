@@ -43,6 +43,7 @@ export type OrderToPlace = {
   }[];
   payment_type: PaymentType;
   comment?: string;
+  user_type: UserType;
 };
 
 type OrderedFood = {
