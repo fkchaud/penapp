@@ -108,7 +108,7 @@ const ChefOrders = () => {
   return (
     <OrderListing
       orderActionsBuilder={getActions}
-      activeOrderStatuses={["ACCEPTED", "PREPARING", "PREPARED"]}
+      activeOrderStatuses={["PLACED", "ACCEPTED", "PREPARING", "PREPARED"]}
       inactiveOrderStatuses={["PICKED_UP", "DELIVERED"]}
       beforeComponent={
         <Button
