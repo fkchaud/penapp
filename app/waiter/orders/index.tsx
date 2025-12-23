@@ -98,17 +98,15 @@ const Orders = () => {
         />,
       );
     }
-    if (["PICKED_UP", "PREPARED"].includes(order.last_status.status)) {
-      actions.push(
-        <OrderStatusActionButton
-          key={"delivered"}
-          order={order}
-          onFinishAction={onActionClose}
-          targetStatus={"DELIVERED"}
-          text={"Entregado"}
-        />,
-      );
-    }
+    actions.push(
+      <OrderStatusActionButton
+        key={"delivered"}
+        order={order}
+        onFinishAction={onActionClose}
+        targetStatus={"DELIVERED"}
+        text={"Entregado"}
+      />,
+    );
 
     return actions;
   };
