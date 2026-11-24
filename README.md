@@ -15,7 +15,7 @@ roles: mozo, caja, cocina. Consume la API de `../penapi` vía rutas relativas
 ## Subdirectories & System Boundaries
 
 - [app](./app/README.md) - Pantallas (Expo Router): login, toma de pedido,
-  listados por rol, edición.
+  listados por rol, edición, admin (carga de datos).
 - [components](./components/README.md) - Componentes presentacionales (cards,
   listados, masonry, OrderTaking).
 - [hooks](./hooks/README.md) - `useApi` (único adapter HTTP), `useIdemKey`,

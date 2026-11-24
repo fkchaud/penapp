@@ -248,6 +248,18 @@ const MyDrawer = () => {
         options={{ drawerItemStyle: { display: "none" }, title: `Editar Pedido` }}
       />
       <Drawer.Screen
+        name={"admin/index"}
+        options={{
+          drawerLabel: "Admin",
+          title: "Administración",
+          drawerItemStyle: { display: isManager ? "flex" : "none" },
+        }}
+      />
+      <Drawer.Screen
+        name={"admin/staff"}
+        options={{ drawerItemStyle: { display: "none" }, title: "Carga de usuarios" }}
+      />
+      <Drawer.Screen
         name={"logout"}
         options={{ drawerLabel: "Cerrar sesión", title: "Salir" }}
       />
