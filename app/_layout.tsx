@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider, Portal, Snackbar } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import axios from "axios";
 import { Theme } from "@/constants/Colors";
 import { UserType, WaiterTables } from "@/types";
+import { useApi } from "@/hooks/useApi";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,6 +17,32 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// ---------- Auth ----------
+export type AuthUser = { name: string; role: string };
+export type AuthContextType = {
+  user: AuthUser | null;
+  actingRole: string;
+  setActingRole: (role: string) => void;
+  login: (name: string, pin: string) => Promise<void>;
+  logout: () => Promise<void>;
+  loading: boolean;
+};
+export const AuthContext = createContext<AuthContextType | null>(null);
+
+// module-level token holder used by the axios interceptor
+let authToken: string | null = null;
+export const getAuthToken = () => authToken;
+export const setAuthToken = (t: string | null) => {
+  authToken = t;
+};
+
+const ROLE_TO_USER_TYPE: Record<string, UserType> = {
+  waiter: UserType.Waiter,
+  cashier: UserType.Cashier,
+  chef: UserType.Chef,
+  manager: UserType.Cashier,
+};
 
 export type WaiterContextType = {
   waiter: WaiterTables;
@@ -58,32 +86,107 @@ export type UserTypeContextType = {
   setUserType: React.Dispatch<React.SetStateAction<UserType>>;
 };
 export const UserTypeContext = createContext<UserTypeContextType | null>(null);
-const UserTypeProvider = ({ children }: { children: React.ReactNode }) => {
+
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const api = useApi();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [actingRole, setActingRoleState] = useState<string>("undef");
   const [userType, setUserType] = useState<UserType>(UserType.Undefined);
+  const [loading, setLoading] = useState(true);
+  const { setWaiter } = useContext(WaiterContext) as WaiterContextType;
+
+  const setActingRole = (role: string) => {
+    setActingRoleState(role);
+    setUserType(ROLE_TO_USER_TYPE[role] ?? UserType.Undefined);
+  };
 
   useEffect(() => {
-    const retrieve = async () => {
-      const ut = await AsyncStorage.getItem("userType");
-      if (ut && Object.values(UserType).includes(ut as UserType))
-        setUserType(ut as UserType);
-    };
-    retrieve();
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem("auth_token");
+        const raw = await AsyncStorage.getItem("auth_user");
+        if (token && raw) {
+          const u: AuthUser = JSON.parse(raw);
+          setAuthToken(token);
+          setUser(u);
+          setActingRole(u.role);
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  useEffect(() => {
-    AsyncStorage.setItem("userType", userType);
-  }, [userType]);
+  const login = async (name: string, pin: string) => {
+    const res = await api.login(name, pin);
+    if (!res) throw new Error("Login fallido");
+    const u: AuthUser = { name: res.name, role: res.role };
+    await AsyncStorage.setItem("auth_token", res.token);
+    await AsyncStorage.setItem("auth_user", JSON.stringify(u));
+    setAuthToken(res.token);
+    setUser(u);
+    setActingRole(res.role);
+    // waiter context
+    if (res.role === "waiter" || res.role === "manager") {
+      try {
+        const waiters = await api.getWaiters();
+        const w = waiters?.find((x: any) => x.name === res.name);
+        if (w) setWaiter(w);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const logout = async () => {
+    await AsyncStorage.removeItem("auth_token");
+    await AsyncStorage.removeItem("auth_user");
+    await AsyncStorage.removeItem("waiter_obj");
+    setAuthToken(null);
+    setUser(null);
+    setActingRoleState("undef");
+    setUserType(UserType.Undefined);
+  };
 
   return (
-    <UserTypeContext.Provider value={{ userType, setUserType }}>
+    <AuthContext.Provider
+      value={{ user, actingRole, setActingRole, login, logout, loading }}
+    >
+      <UserTypeContext.Provider value={{ userType, setUserType }}>
+        {children}
+      </UserTypeContext.Provider>
+    </AuthContext.Provider>
+  );
+};
+
+// ---------- Alert ----------
+export type AlertContextType = {
+  alertMessage: string;
+  setAlertMessage: React.Dispatch<React.SetStateAction<string>>;
+  onDismiss: (() => any) | null;
+  setOnDismiss: React.Dispatch<React.SetStateAction<(() => any) | null>>;
+};
+export const AlertContext = createContext({});
+const AlertProvider = ({ children }: { children: React.ReactNode }) => {
+  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [onDismiss, setOnDismiss] = useState<(() => any) | null>(null);
+  return (
+    <AlertContext.Provider
+      value={{ alertMessage, setAlertMessage, onDismiss, setOnDismiss }}
+    >
       {children}
-    </UserTypeContext.Provider>
+    </AlertContext.Provider>
   );
 };
 
 const MyDrawer = () => {
+  const auth = useContext(AuthContext);
   const { userType } = useContext(UserTypeContext) as UserTypeContextType;
   const { waiter } = useContext(WaiterContext) as WaiterContextType;
+  const role = auth?.actingRole ?? "undef";
+  const isManager = auth?.user?.role === "manager";
+
+  const show = (r: string) => isManager || role === r;
 
   return (
     <Drawer backBehavior={"history"}>
@@ -97,11 +200,9 @@ const MyDrawer = () => {
       <Drawer.Screen
         name={"cashier/orders"}
         options={{
-          drawerLabel: "Ver pedidos",
+          drawerLabel: "Ver pedidos (Caja)",
           title: "Pedidos (Caja)",
-          drawerItemStyle: {
-            display: userType == UserType.Cashier ? "flex" : "none",
-          },
+          drawerItemStyle: { display: show("cashier") ? "flex" : "none" },
         }}
       />
       <Drawer.Screen
@@ -110,20 +211,16 @@ const MyDrawer = () => {
           drawerLabel: "Agregar pedido",
           title: "Pedido manual",
           drawerItemStyle: {
-            display: [UserType.Cashier, UserType.Chef].includes(userType)
-              ? "flex"
-              : "none",
+            display: show("cashier") || show("chef") ? "flex" : "none",
           },
         }}
       />
       <Drawer.Screen
         name={"chef/orders"}
         options={{
-          drawerLabel: "Ver pedidos",
+          drawerLabel: "Ver pedidos (Cocina)",
           title: "Pedidos (Cocina)",
-          drawerItemStyle: {
-            display: userType == UserType.Chef ? "flex" : "none",
-          },
+          drawerItemStyle: { display: show("chef") ? "flex" : "none" },
         }}
       />
       <Drawer.Screen
@@ -132,7 +229,7 @@ const MyDrawer = () => {
           drawerLabel: "Ver pedidos",
           title: `Pedidos (${waiter ? waiter.name : "Mozos"})`,
           drawerItemStyle: {
-            display: userType == UserType.Waiter && !!waiter ? "flex" : "none",
+            display: show("waiter") && !!waiter ? "flex" : "none",
           },
         }}
       />
@@ -142,38 +239,19 @@ const MyDrawer = () => {
           drawerLabel: "Tomar pedido",
           title: "Tomar pedido",
           drawerItemStyle: {
-            display: userType == UserType.Waiter && waiter ? "flex" : "none",
+            display: show("waiter") && !!waiter ? "flex" : "none",
           },
         }}
       />
       <Drawer.Screen
         name={"waiter/orders/[id]/edit"}
-        options={{
-          drawerItemStyle: { display: "none" },
-          title: `Editar Pedido`,
-        }}
+        options={{ drawerItemStyle: { display: "none" }, title: `Editar Pedido` }}
+      />
+      <Drawer.Screen
+        name={"logout"}
+        options={{ drawerLabel: "Cerrar sesión", title: "Salir" }}
       />
     </Drawer>
-  );
-};
-
-export type AlertContextType = {
-  alertMessage: string;
-  setAlertMessage: React.Dispatch<React.SetStateAction<string>>;
-  onDismiss: (() => any) | null;
-  setOnDismiss: React.Dispatch<React.SetStateAction<(() => any) | null>>;
-};
-export const AlertContext = createContext({});
-const AlertProvider = ({ children }: { children: React.ReactNode }) => {
-  const [alertMessage, setAlertMessage] = useState<string>("");
-  const [onDismiss, setOnDismiss] = useState<(() => any) | null>(null);
-
-  return (
-    <AlertContext.Provider
-      value={{ alertMessage, setAlertMessage, onDismiss, setOnDismiss }}
-    >
-      {children}
-    </AlertContext.Provider>
   );
 };
 
@@ -181,7 +259,6 @@ const MyPortal = () => {
   const { alertMessage, setAlertMessage, onDismiss, setOnDismiss } = useContext(
     AlertContext,
   ) as AlertContextType;
-
   return (
     <Portal>
       <Snackbar
@@ -198,21 +275,68 @@ const MyPortal = () => {
   );
 };
 
+// ---------- axios interceptors ----------
+let interceptorsRegistered = false;
+function registerInterceptors(logout: () => Promise<void>) {
+  if (interceptorsRegistered) return;
+  interceptorsRegistered = true;
+  axios.interceptors.request.use(async (config) => {
+    const t = getAuthToken() ?? (await AsyncStorage.getItem("auth_token"));
+    if (t) {
+      config.headers = config.headers ?? {};
+      (config.headers as any).Authorization = `Bearer ${t}`;
+    }
+    return config;
+  });
+  axios.interceptors.response.use(
+    (r) => r,
+    async (err) => {
+      if (err?.response?.status === 401) {
+        await logout();
+      }
+      return Promise.reject(err);
+    },
+  );
+}
+
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <WaiterProvider>
-        <UserTypeProvider>
-          <AlertProvider>
-            <PaperProvider theme={Theme}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <MyDrawer />
-                <MyPortal />
-              </GestureHandlerRootView>
-            </PaperProvider>
-          </AlertProvider>
-        </UserTypeProvider>
+        <AuthProviderWithInterceptors />
       </WaiterProvider>
     </QueryClientProvider>
   );
+}
+
+// wrapper to access AuthProvider's logout for interceptors
+function AuthProviderWithInterceptors() {
+  const authRef = useRef<AuthContextType | null>(null);
+  // We need AuthProvider rendered to get logout; restructure below instead.
+  return <AuthProviderInner />;
+}
+
+function AuthProviderInner() {
+  // Render AuthProvider and register interceptors using its context via a child.
+  return (
+    <AuthProvider>
+      <InterceptorRegistrar />
+      <AlertProvider>
+        <PaperProvider theme={Theme}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <MyDrawer />
+            <MyPortal />
+          </GestureHandlerRootView>
+        </PaperProvider>
+      </AlertProvider>
+    </AuthProvider>
+  );
+}
+
+function InterceptorRegistrar() {
+  const auth = useContext(AuthContext);
+  useEffect(() => {
+    if (auth) registerInterceptors(auth.logout);
+  }, [auth]);
+  return null;
 }

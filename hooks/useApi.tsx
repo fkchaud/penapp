@@ -19,6 +19,12 @@ export interface UpdateOrderStatusParams {
   areDrinksReady?: boolean;
 }
 
+export interface StaffMember {
+  name: string;
+  role: string;
+  url?: string;
+}
+
 export const useApi = () => {
   const serviceUrl = "/api/";
 
@@ -30,6 +36,26 @@ export const useApi = () => {
       return followResults ? response.data.results : response.data;
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const getStaff: () => Promise<StaffMember[]> = async () => {
+    const url = serviceUrl + "staff/";
+    return await getAny(url);
+  };
+
+  const login = async (
+    name: string,
+    pin: string,
+  ): Promise<{ token: string; name: string; role: string } | undefined> => {
+    const url = serviceUrl + "auth/login/";
+    try {
+      const response = await axios.post(url, { name, pin });
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
+      if (error.response?.data?.error) throw Error(error.response.data.error);
+      throw error;
     }
   };
 
@@ -154,6 +180,8 @@ export const useApi = () => {
   };
 
   return {
+    getStaff,
+    login,
     getTables,
     getWaiters,
     getFoods,

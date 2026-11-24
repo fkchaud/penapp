@@ -1,226 +1,122 @@
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Button,
-  HelperText,
-  SegmentedButtons,
-  TextInput,
-} from "react-native-paper";
+import { Button, HelperText, TextInput } from "react-native-paper";
 import React, { useContext, useEffect, useState } from "react";
-import { Table, UserType, UserTypeByKey, WaiterTables } from "@/types";
-import {
-  UserTypeContext,
-  UserTypeContextType,
-  WaiterContext,
-  WaiterContextType,
-} from "@/app/_layout";
-import { SelectList } from "react-native-dropdown-select-list";
-import { useIsFocused } from "@react-navigation/core";
-import { useApi } from "@/hooks/useApi";
 import { useRouter } from "expo-router";
-
-const UserTypeSelector = () => {
-  const { userType, setUserType } = useContext(
-    UserTypeContext,
-  ) as UserTypeContextType;
-
-  return (
-    <SegmentedButtons
-      value={userType}
-      onValueChange={(value) => setUserType(UserTypeByKey[value])}
-      buttons={[
-        {
-          value: UserType.Waiter,
-          label: "Mozo",
-        },
-        {
-          value: UserType.Cashier,
-          label: "Caja",
-        },
-        {
-          value: UserType.Chef,
-          label: "Cocina",
-        },
-      ]}
-    />
-  );
-};
+import { AuthContext } from "@/app/_layout";
+import { useApi } from "@/hooks/useApi";
+import { StaffMember } from "@/hooks/useApi";
 
 const Index = () => {
-  const { userType } = useContext(UserTypeContext) as UserTypeContextType;
-  const { waiter, setWaiter } = useContext(WaiterContext) as WaiterContextType;
-  const isFocused = useIsFocused();
   const router = useRouter();
-  const { getTables, getWaiters, updateWaiter } = useApi();
-
-  const [waiters, setWaiters] = useState<WaiterTables[]>([]);
-  const [tables, setTables] = useState<Table[]>([]);
-  const [lastUpdatedTables, setLastUpdatedTables] = useState<{
-    from: number;
-    to: number;
-  }>({
-    from: waiter?.from_table.number || 0,
-    to: waiter?.to_table.number || 0,
-  });
+  const auth = useContext(AuthContext);
+  const { getStaff } = useApi();
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [selected, setSelected] = useState<string>("");
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isFocused) return;
+    if (auth?.user) {
+      // already logged in: go to a sensible home
+      const role = auth.actingRole;
+      if (role === "chef") router.replace("/chef/orders");
+      else if (role === "cashier" || role === "manager")
+        router.replace("/cashier/orders");
+      else router.replace("/waiter/take_order");
+      return;
+    }
+    (async () => {
+      try {
+        const s = await getStaff();
+        setStaff(s ?? []);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [auth?.user]);
 
-    const call = async () => {
-      const newWaiters = await getWaiters();
-      setWaiters(newWaiters);
-    };
-    call().catch(console.error);
-  }, [userType, isFocused]);
-
-  useEffect(() => {
-    if (!isFocused) return;
-
-    const call = async () => {
-      const newTables: Table[] = await getTables();
-      setTables(newTables);
-    };
-    call().catch(console.error);
-  }, [userType, isFocused]);
-
-  const setTableRange = ({ min, max }: { min: number; max: number }) => {
-    const updatedWaiter = {
-      ...waiter,
-      from_table: { number: min },
-      to_table: { number: max },
-    };
-    setWaiter(updatedWaiter);
+  const handleLogin = async () => {
+    setError("");
+    if (!selected) {
+      setError("Seleccioná tu nombre");
+      return;
+    }
+    if (!pin) {
+      setError("Ingresá el PIN");
+      return;
+    }
+    setLoading(true);
+    try {
+      await auth?.login(selected, pin);
+      const role = auth?.actingRole ?? "waiter";
+      if (role === "chef") router.replace("/chef/orders");
+      else if (role === "cashier" || role === "manager")
+        router.replace("/cashier/orders");
+      else router.replace("/waiter/take_order");
+    } catch (e: any) {
+      setError(e?.message ?? "Error de login");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (auth?.loading) {
+    return (
+      <SafeAreaView>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text>Cargando...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (auth?.user) return null;
 
   return (
     <SafeAreaView>
       <ScrollView>
-        <View>
-          <UserTypeSelector />
-          {userType == UserType.Waiter && (
-            <>
-              <HelperText type={"error"} visible={!waiter}>
-                Seleccione el mozo antes de continuar
-              </HelperText>
-              <SelectList
-                setSelected={(val: string) => {
-                  if (!waiters || waiters.length === 0) return;
-                  const wt = waiters.find((w) => w.name == val);
-                  if (wt) setWaiter(wt);
-                }}
-                data={
-                  waiters?.map((w) => ({ key: w.name, value: w.name })) || []
-                }
-                defaultOption={
-                  waiter ? { key: waiter.name, value: waiter.name } : undefined
-                }
-                save="value"
-                search={waiters ? waiters.length > 5 : false}
-                boxStyles={waiter ? {} : { borderColor: "red" }}
-              />
-              <Text />
-              {tables?.length > 0 && waiter && (
-                <View className={"mt-4"}>
-                  <Text>Mesas que atiende:</Text>
-                  <View className={"flex-row"}>
-                    <TextInput
-                      mode={"outlined"}
-                      label={"Desde"}
-                      inputMode={"numeric"}
-                      value={waiter.from_table.number.toString()}
-                      onChangeText={(text) =>
-                        setTableRange({
-                          min: Number(text),
-                          max: waiter.to_table.number,
-                        })
-                      }
-                      onBlur={() => {
-                        if (lastUpdatedTables.from == waiter.from_table.number)
-                          return;
-                        updateWaiter(waiter);
-                        setLastUpdatedTables({
-                          ...lastUpdatedTables,
-                          from: waiter.from_table.number,
-                        });
-                      }}
-                    />
-                    <TextInput
-                      mode={"outlined"}
-                      label={"Hasta"}
-                      inputMode={"numeric"}
-                      value={waiter.to_table.number.toString()}
-                      onChangeText={(text) =>
-                        setTableRange({
-                          min: waiter.from_table.number,
-                          max: Number(text),
-                        })
-                      }
-                      onBlur={() => {
-                        if (lastUpdatedTables.to == waiter.to_table.number)
-                          return;
-                        updateWaiter(waiter);
-                        setLastUpdatedTables({
-                          ...lastUpdatedTables,
-                          to: waiter.to_table.number,
-                        });
-                      }}
-                    />
-                  </View>
-                </View>
-              )}
-              {waiter && (
-                <>
-                  <Button
-                    mode={"contained"}
-                    onPress={() => router.navigate("/waiter/take_order")}
-                    className={"mt-4"}
-                  >
-                    Tomar pedido
-                  </Button>
-                  <Button
-                    mode={"contained-tonal"}
-                    onPress={() => router.navigate("/waiter/orders")}
-                  >
-                    Ver pedidos
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-          {userType == UserType.Chef && (
-            <>
+        <View style={{ padding: 16 }}>
+          <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}>
+            PeñApp — Iniciar sesión
+          </Text>
+          <Text style={{ marginBottom: 8 }}>Seleccioná tu nombre:</Text>
+          <View style={{ marginBottom: 12 }}>
+            {staff.map((s) => (
               <Button
-                mode={"contained"}
-                onPress={() => router.navigate("/chef/orders")}
-                className={"mt-4"}
+                key={s.name}
+                mode={selected === s.name ? "contained" : "outlined"}
+                onPress={() => setSelected(s.name)}
+                style={{ marginBottom: 4 }}
               >
-                Ver pedidos
+                {s.name} ({s.role})
               </Button>
-              <Button
-                mode={"contained-tonal"}
-                onPress={() => router.navigate("/add_manual_order")}
-              >
-                Agregar pedido manual
-              </Button>
-            </>
-          )}
-          {userType == UserType.Cashier && (
-            <>
-              <Button
-                mode={"contained"}
-                onPress={() => router.navigate("/cashier/orders")}
-                className={"mt-4"}
-              >
-                Ver pedidos
-              </Button>
-              <Button
-                mode={"contained-tonal"}
-                onPress={() => router.navigate("/add_manual_order")}
-              >
-                Agregar pedido manual
-              </Button>
-            </>
-          )}
+            ))}
+          </View>
+          <TextInput
+            mode="outlined"
+            label="PIN"
+            value={pin}
+            onChangeText={setPin}
+            secureTextEntry
+            keyboardType="numeric"
+            maxLength={8}
+            style={{ marginBottom: 12 }}
+          />
+          {error ? (
+            <HelperText type="error" visible>
+              {error}
+            </HelperText>
+          ) : null}
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            loading={loading}
+            disabled={loading}
+          >
+            Entrar
+          </Button>
         </View>
       </ScrollView>
     </SafeAreaView>
