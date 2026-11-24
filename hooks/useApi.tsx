@@ -4,6 +4,7 @@ import {
   Order,
   OrderStatus,
   OrderToPlace,
+  StockRef,
   WaiterTables,
   Table,
 } from "@/types";
@@ -90,14 +91,15 @@ export interface UpdateStockRequest {
 
 // ---------------------------------------------------------------------------
 // Foods — /api/foods/ (FoodSerializer: id, url, name, price, remaining, icon,
-// units_per_pack, stock (pk), stock_name)
+// units_per_pack, stock (anidado {id, name, initial_quantity} | null))
 // ---------------------------------------------------------------------------
 export interface CreateFoodRequest {
   name: string;
   price: number;
   icon?: string;
   units_per_pack?: number;
-  stock?: number | null;
+  /** Escritura: pk o objeto con id (el backend acepta ambos). */
+  stock?: number | StockRef | null;
 }
 
 export type UpdateFoodRequest = CreateFoodRequest;
@@ -134,7 +136,8 @@ export interface BulkResponse {
 
 // ---------------------------------------------------------------------------
 // Drinks — /api/drinks/ (DrinkSerializer: id, url, name, price, remaining,
-// icon, units_per_pack, stock (pk), stock_name) — misma forma que Food
+// icon, units_per_pack, stock (anidado {id, name, initial_quantity} | null))
+// — misma forma que Food
 // ---------------------------------------------------------------------------
 export type CreateDrinkRequest = CreateFoodRequest;
 export type UpdateDrinkRequest = CreateFoodRequest;

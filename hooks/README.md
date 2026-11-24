@@ -57,7 +57,8 @@ export interface CreateFoodRequest {
   price: number;
   icon?: string;
   units_per_pack?: number;
-  stock?: number | null;
+  /** Escritura: pk o objeto con id (el backend acepta ambos). */
+  stock?: number | StockRef | null;
 }
 export type UpdateFoodRequest = CreateFoodRequest;
 export interface FoodBulkItem {

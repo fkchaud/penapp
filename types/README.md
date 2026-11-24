@@ -31,14 +31,20 @@ export type Waiter = { name: string };
 
 export type WaiterTables = Waiter & { from_table: Table; to_table: Table };
 
+/** Referencia anidada de stock tal como la devuelven FoodSerializer/DrinkSerializer. */
+export type StockRef = {
+  id: number;
+  name: string;
+  initial_quantity: number;
+};
+
 export type Item = {
   id: number;
   name: string;
   icon: string;
   price: number;
   remaining: number;
-  stock?: number | null;
-  stock_name?: string | null;
+  stock?: StockRef | null;
   units_per_pack?: number;
 };
 

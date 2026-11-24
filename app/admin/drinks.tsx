@@ -96,10 +96,9 @@ export default function AdminDrinks() {
     setPrice(String(d.price ?? ""));
     setIcon(d.icon ?? "");
     setUnits(String(d.units_per_pack ?? 1));
-    const drinkStock = stocks.find((s) => s.id == d.stock);
-    setStock(d.stock_name ?? "");
-    setStockSelected(!!(d.stock_name));
-    setInitial(String(drinkStock?.initial_quantity || 0));
+    setStock(d.stock?.name ?? "");
+    setStockSelected(!!d.stock);
+    setInitial(String(d.stock?.initial_quantity ?? 0));
     setMode("form");
     setMessage("");
   };
@@ -369,7 +368,7 @@ export default function AdminDrinks() {
                 <Text style={{ fontWeight: "bold" }}>{d.name}</Text>
                 <Text style={{ fontSize: 13, color: "#555" }}>
                   ${d.price} - quedan {d.remaining} - pack x{d.units_per_pack}
-                  {d.stock_name ? ` - stock: ${d.stock_name}` : ""}
+                  {d.stock ? ` - stock: ${d.stock.name}` : ""}
                 </Text>
                 <View style={{ flexDirection: "row", marginTop: 6, flexWrap: "wrap" }}>
                   <Button mode="outlined" compact onPress={() => openEdit(d)} style={{ marginRight: 8 }}>
