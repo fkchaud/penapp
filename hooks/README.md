@@ -21,6 +21,11 @@ refetching are the responsibility of callers (TanStack Query `useQuery` at the c
 ### `useApi.tsx`
 
 ```ts
+// Roles — coherentes con papi.subpapi.models.StaffRole
+export type StaffRole = "waiter" | "cashier" | "chef" | "manager";
+export const STAFF_ROLES: StaffRole[];
+export const isStaffRole: (r: string) => r is StaffRole;
+
 export interface GetOrdersParams {
   waiter?: string;
   status?: OrderStatus | OrderStatus[];
@@ -33,27 +38,79 @@ export interface UpdateOrderStatusParams {
   areDrinksReady?: boolean;
 }
 
+export interface UpdateOrderStatusApiParams {
+  status: OrderStatus;
+  are_food_ready?: boolean;
+  are_drinks_ready?: boolean;
+}
+
+// Request/response types (coherent with penapi serializers/views)
+export interface LoginResponse { token: string; name: string; role: StaffRole }
+export interface StaffMember { url: string; name: string; role: StaffRole; active: boolean }
+export interface CreateStaffRequest { name: string; role: StaffRole; active?: boolean }
+export interface StaffBulkItem { name: string; role: StaffRole }
+export interface StockItem { id: number; url: string; name: string; initial_quantity: number }
+export interface CreateStockRequest { name: string; initial_quantity: number }
+export interface UpdateStockRequest { initial_quantity: number }
+export interface CreateFoodRequest {
+  name: string;
+  price: number;
+  icon?: string;
+  units_per_pack?: number;
+  stock?: number | null;
+}
+export type UpdateFoodRequest = CreateFoodRequest;
+export interface FoodBulkItem {
+  name: string;
+  price: number;
+  icon?: string;
+  stock?: string;          // nombre del stock, no id
+  stock_name?: string;
+  units_per_pack?: number;
+  initial_quantity?: number;
+}
+export interface BulkError { index: number; error: string; item?: unknown }
+export interface BulkResponse { created: number; updated: number; errors: BulkError[] }
+export interface PlaceOrderResponse { orderId: number }
+
 export const useApi: () => {
+  // lectura
+  getStaff: () => Promise<StaffMember[]>;
+  getStocks: () => Promise<StockItem[]>;
   getTables: () => Promise<Table[]>;
   getWaiters: () => Promise<WaiterTables[]>;
   getFoods: () => Promise<Item[]>;
   getDrinks: () => Promise<Item[]>;
   getOrders: (params?: GetOrdersParams) => Promise<Order[]>;
   getOrder: (id: string | number) => Promise<Order>;
+  // auth
+  login: (name: string, pin: string) => Promise<LoginResponse>;
+  // staff (manager)
+  createStaff: (data: CreateStaffRequest) => Promise<StaffMember>;
+  bulkStaff: (items: StaffBulkItem[]) => Promise<BulkResponse>;
+  // stock (manager)
+  createStock: (data: CreateStockRequest) => Promise<StockItem>;
+  updateStock: (id: number, data: UpdateStockRequest) => Promise<StockItem>;
+  // foods (manager)
+  createFood: (data: CreateFoodRequest) => Promise<Item>;
+  updateFood: (id: number, data: UpdateFoodRequest) => Promise<Item>;
+  deleteFood: (id: number) => Promise<void>;
+  bulkFoods: (items: FoodBulkItem[]) => Promise<BulkResponse>;
+  // orders
   placeOrder: (
     order: OrderToPlace,
     headers?: Record<string, string>,
-  ) => Promise<{ orderId: number }>;
+  ) => Promise<PlaceOrderResponse>;
   updateOrder: (
     orderId: number | string,
     order: OrderToPlace,
     headers?: Record<string, string>,
-  ) => Promise<any>;
+  ) => Promise<Order>;
   updateOrderStatus: (
     params: UpdateOrderStatusParams,
     headers?: Record<string, string>,
-  ) => Promise<any>;
-  updateWaiter: (waiterTables: WaiterTables) => Promise<any>;
+  ) => Promise<Order | undefined>;
+  updateWaiter: (waiterTables: WaiterTables) => Promise<WaiterTables | undefined>;
 };
 ```
 
@@ -61,16 +118,27 @@ Endpoint mapping (all relative, no origin, no axios instance):
 
 | Hook method | Verb | Path | Body / query | Return |
 | --- | --- | --- | --- | --- |
+| `getStaff` | GET | `/api/staff/` | — | `response.data.results` |
+| `getStocks` | GET | `/api/stocks/` | — | `response.data.results` |
 | `getTables` | GET | `/api/tables/` | — | `response.data.results` |
 | `getWaiters` | GET | `/api/waiters/` | — | `response.data.results` |
 | `getFoods` | GET | `/api/foods/` | — | `response.data.results` |
 | `getDrinks` | GET | `/api/drinks/` | — | `response.data.results` |
-| `getOrders` | GET | `/api/orders/` | `?waiter=…` and/or `?status=…` | `response.data.results` |
+| `getOrders` | GET | `/api/orders/` | `?waiter=…` and/or `?status=…` (URL-encoded, `&`-joined) | `response.data.results` |
 | `getOrder` | GET | `/api/orders/{id}/` | — | raw `response.data` (`followResults: false`) |
+| `login` | POST | `/api/auth/login/` | `{ name, pin }` | raw `response.data` (`{ token, name, role }`) |
+| `createStaff` | POST | `/api/staff/` | `CreateStaffRequest` | raw `response.data` |
+| `bulkStaff` | POST | `/api/staff/bulk/` | `{ items: StaffBulkItem[] }` | raw `response.data` (`BulkResponse`) |
+| `createStock` | POST | `/api/stocks/` | `CreateStockRequest` | raw `response.data` |
+| `updateStock` | PATCH | `/api/stocks/{id}/` | `UpdateStockRequest` | raw `response.data` |
+| `createFood` | POST | `/api/foods/` | `CreateFoodRequest` | raw `response.data` |
+| `updateFood` | PUT | `/api/foods/{id}/` | `UpdateFoodRequest` | raw `response.data` |
+| `deleteFood` | DELETE | `/api/foods/{id}/` | — | `undefined` (204) |
+| `bulkFoods` | POST | `/api/foods/bulk/` | `{ items: FoodBulkItem[] }` | raw `response.data` (`BulkResponse`) |
 | `placeOrder` | POST | `/api/place_order/` | `OrderToPlace` | raw `response.data` (`{ orderId }`) |
-| `updateOrder` | PUT | `/api/orders/{orderId}/` | `OrderToPlace` | `response.data.results` |
+| `updateOrder` | PUT | `/api/orders/{orderId}/` | `OrderToPlace` | raw `response.data` (serialized `Order`, not paginated) |
 | `updateOrderStatus` | POST | `/api/orders/{orderId}/update_status` | `{ status, are_food_ready?, are_drinks_ready? }` | raw `response.data` |
-| `updateWaiter` | PATCH | `/api/waiters/{name}/` | `{ name, from_table, to_table }` | raw `response.data` |
+| `updateWaiter` | PATCH | `/api/waiters/{name}/` | `{ name, from_table, to_table }` | raw `response.data`; `undefined` on 208 empty body |
 
 `updateOrderStatus` uses the internal, non-exported interface
 `UpdateOrderStatusApiParams { status: OrderStatus; are_food_ready?: boolean; are_drinks_ready?: boolean }`
@@ -111,21 +179,22 @@ export function useColorScheme(): 'light';            // web (always)
    whatever serves the bundle (Expo dev server proxy / web origin).
 2. **`getAny` defaults to unwrapping `results`.** The flag is computed as
    `!options || !("followResults" in options) || options.followResults`, which is `true` when
-   `options` is omitted. The adjacent inline comment ("by default, doesn't follow results")
-   contradicts the code; the code is authoritative. `getOrder` is the only call site that
-   passes `followResults: false`.
+   `options` is omitted (the inline comment matches this: by default it follows `.results`).
+   `getOrder` is the only call site that passes `followResults: false`.
 3. **Failed GETs resolve to `undefined`.** `getAny` catches every axios error, calls
-   `console.error(error)`, and returns `undefined` without rethrowing. The declared method
-   return types omit `undefined` (TS accepts this only because `axios` data is `any`), so every
-   `get*` caller must treat a missing/`undefined` result as a failure.
-4. **Write errors are split by method.** `placeOrder` and `updateOrder` log, then throw
-   `Error(error.response.data.error)` when the server sent a JSON `error` field, else rethrow
+   `console.error(error)`, and returns `undefined as unknown as T` without rethrowing. The
+   declared return type is `Promise<T>` (no `undefined`), so every `get*` caller must treat a
+   missing/`undefined` result as a failure (typically `?? []` at the call site).
+4. **Write errors are split by method.** Every write method (`login`, `createStaff`,
+   `bulkStaff`, `createStock`, `updateStock`, `createFood`, `updateFood`, `deleteFood`,
+   `bulkFoods`, `placeOrder`, `updateOrder`) logs, then throws
+   `Error(error.response.data.error)` when the server sent a JSON `error` field, else rethrows
    the original error. `updateOrderStatus` and `updateWaiter` swallow all errors (resolve to
    `undefined`); callers cannot observe failure except through `console.error`.
 5. **`getOrders` filter serialization.** A status array is joined with commas into a single
-   `status=` value (server-side CSV parsing). Query concatenation has no `&` separator and no
-   URL-encoding: supplying both `waiter` and `status` produces one malformed parameter
-   (`?waiter=Xstatus=Y`), and waiter names containing `&`, `#`, or spaces are not encoded.
+   `status=` value (server-side CSV parsing). Each parameter is `encodeURIComponent`-ed and
+   parameters are joined with `&`, so both filters can be supplied together and waiter names
+   with special characters are safe.
 6. **Falsy readiness flags are dropped.** `updateOrderStatus` attaches `are_food_ready` /
    `are_drinks_ready` only when the incoming value is truthy (`if (areFoodReady) …`), so
    `false` is never transmitted. A readiness flag cannot be reset through this adapter.
@@ -133,9 +202,9 @@ export function useColorScheme(): 'light';            // web (always)
    `updateOrderStatus` emit `{ ...(headers ?? {}) }` — an empty object when omitted. No
    `Idempotency-Key` or content-type is injected here; call sites pass it explicitly.
    `updateWaiter` accepts no headers.
-8. **`updateOrder` returns a nested field.** It returns `response.data.results`, whereas
-   `placeOrder` and `updateOrderStatus` return `response.data`; callers must not assume a
-   uniform envelope.
+8. **`updateOrder` returns the serialized order.** It returns `response.data` directly
+   (`OrderViewSet.update` responds with the order, not a paginated envelope), matching
+   `placeOrder` and `updateOrderStatus`, which also return `response.data`.
 9. **One idempotency key per mount.** `useIdemKey` lazily initializes a `useRef` during render
    and never regenerates on re-render; `regenerateKey` mutates `current` in place and does not
    trigger a render. The returned object is the ref, not the string. Depends on a global
@@ -151,8 +220,12 @@ export function useColorScheme(): 'light';            // web (always)
 ## Side Effects
 
 - Performs HTTP requests via `axios` on relative `/api/` paths when hook methods are invoked.
-- Emits `console.error` on every caught request failure (all ten methods).
-- Throws on failure only for `placeOrder` and `updateOrder`.
+- Emits `console.error` on every caught request failure (all methods).
+- Throws on failure for every write method (`login`, `createStaff`, `bulkStaff`, `createStock`,
+  `updateStock`, `createFood`, `updateFood`, `deleteFood`, `bulkFoods`, `placeOrder`,
+  `updateOrder`), preferring the server's JSON `error` field when present.
+  `updateOrderStatus` and `updateWaiter` swallow all errors (resolve to `undefined`);
+  GETs (`getAny`) also swallow errors (resolve to `undefined`).
 - No state, storage, cookie, or cache writes; the only mutable state is the `useIdemKey` ref.
 - Declares no timers, subscriptions, or `useEffect` hooks.
 

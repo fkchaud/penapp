@@ -37,6 +37,9 @@ export type Item = {
   icon: string;
   price: number;
   remaining: number;
+  stock?: number | null;
+  stock_name?: string | null;
+  units_per_pack?: number;
 };
 
 export type Table = { number: number };

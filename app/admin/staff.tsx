@@ -3,10 +3,7 @@ import { SafeAreaView, ScrollView, Text, View } from "react-native";
 import { Button, HelperText, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/app/_layout";
-import { useApi } from "@/hooks/useApi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const VALID_ROLES = ["waiter", "cashier", "chef", "manager"];
+import { isStaffRole, StaffRole, STAFF_ROLES, useApi } from "@/hooks/useApi";
 
 type ParsedRow = { name: string; role: string; error?: string };
 
@@ -21,7 +18,7 @@ function parseCsv(text: string): ParsedRow[] {
     const error =
       !name
         ? "falta nombre"
-        : !VALID_ROLES.includes(role)
+        : !isStaffRole(role)
           ? `rol inválido: ${role || "(vacío)"}`
           : undefined;
     rows.push({ name, role, error });
@@ -36,7 +33,7 @@ export default function AdminStaff() {
 
   const [staff, setStaff] = useState<any[]>([]);
   const [name, setName] = useState("");
-  const [role, setRole] = useState("waiter");
+  const [role, setRole] = useState<StaffRole>("waiter");
   const [bulkText, setBulkText] = useState("");
   const [parsed, setParsed] = useState<ParsedRow[]>([]);
   const [message, setMessage] = useState("");
@@ -64,29 +61,15 @@ export default function AdminStaff() {
     );
   }
 
-  const authHeader = async () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${await AsyncStorage.getItem("auth_token")}`,
-  });
-
   const handleAddOne = async () => {
     setMessage("");
     if (!name.trim()) {
       setMessage("Falta el nombre");
       return;
     }
-    if (!VALID_ROLES.includes(role)) {
-      setMessage("Rol inválido");
-      return;
-    }
     setLoading(true);
     try {
-      const res = await fetch("/api/staff/", {
-        method: "POST",
-        headers: await authHeader(),
-        body: JSON.stringify({ name: name.trim(), role, active: true }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.createStaff({ name: name.trim(), role, active: true });
       setMessage("Usuario creado/actualizado");
       setName("");
       refresh();
@@ -112,15 +95,9 @@ export default function AdminStaff() {
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch("/api/staff/bulk/", {
-        method: "POST",
-        headers: await authHeader(),
-        body: JSON.stringify({
-          items: valid.map((r) => ({ name: r.name, role: r.role })),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+      const data = await api.bulkStaff(
+        valid.map((r) => ({ name: r.name, role: r.role as StaffRole })),
+      );
       setMessage(
         `Creados: ${data.created}, actualizados: ${data.updated}, errores: ${data.errors?.length ?? 0}`,
       );
@@ -156,7 +133,7 @@ export default function AdminStaff() {
           style={{ marginBottom: 8 }}
         />
         <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
-          {VALID_ROLES.map((r) => (
+          {STAFF_ROLES.map((r) => (
             <Button
               key={r}
               mode={role === r ? "contained" : "outlined"}
