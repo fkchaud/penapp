@@ -117,7 +117,8 @@ export interface FoodBulkItem {
 }
 
 // ---------------------------------------------------------------------------
-// Bulk — /api/staff/bulk/ y /api/foods/bulk/ → { created, updated, errors }
+// Bulk — /api/staff/bulk/, /api/foods/bulk/ y /api/drinks/bulk/ →
+// { created, updated, errors }
 // ---------------------------------------------------------------------------
 export interface BulkError {
   index: number;
@@ -130,6 +131,14 @@ export interface BulkResponse {
   updated: number;
   errors: BulkError[];
 }
+
+// ---------------------------------------------------------------------------
+// Drinks — /api/drinks/ (DrinkSerializer: id, url, name, price, remaining,
+// icon, units_per_pack, stock (pk), stock_name) — misma forma que Food
+// ---------------------------------------------------------------------------
+export type CreateDrinkRequest = CreateFoodRequest;
+export type UpdateDrinkRequest = CreateFoodRequest;
+export type DrinkBulkItem = FoodBulkItem;
 
 // ---------------------------------------------------------------------------
 // Orders
@@ -262,6 +271,56 @@ export const useApi = () => {
 
   const bulkFoods = async (items: FoodBulkItem[]): Promise<BulkResponse> => {
     const url = serviceUrl + "foods/bulk/";
+    try {
+      const response = await axios.post(url, { items });
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
+      if (error.response?.data?.error) throw Error(error.response.data.error);
+      throw error;
+    }
+  };
+
+  const createDrink = async (data: CreateDrinkRequest): Promise<Item> => {
+    const url = serviceUrl + "drinks/";
+    try {
+      const response = await axios.post(url, data);
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
+      if (error.response?.data?.error) throw Error(error.response.data.error);
+      throw error;
+    }
+  };
+
+  const updateDrink = async (
+    id: number,
+    data: UpdateDrinkRequest,
+  ): Promise<Item> => {
+    const url = serviceUrl + `drinks/${id}/`;
+    try {
+      const response = await axios.put(url, data);
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
+      if (error.response?.data?.error) throw Error(error.response.data.error);
+      throw error;
+    }
+  };
+
+  const deleteDrink = async (id: number): Promise<void> => {
+    const url = serviceUrl + `drinks/${id}/`;
+    try {
+      await axios.delete(url);
+    } catch (error: any) {
+      console.error(error);
+      if (error.response?.data?.error) throw Error(error.response.data.error);
+      throw error;
+    }
+  };
+
+  const bulkDrinks = async (items: DrinkBulkItem[]): Promise<BulkResponse> => {
+    const url = serviceUrl + "drinks/bulk/";
     try {
       const response = await axios.post(url, { items });
       return response.data;
@@ -405,6 +464,10 @@ export const useApi = () => {
     updateFood,
     deleteFood,
     bulkFoods,
+    createDrink,
+    updateDrink,
+    deleteDrink,
+    bulkDrinks,
     login,
     getTables,
     getWaiters,

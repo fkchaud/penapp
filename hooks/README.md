@@ -71,6 +71,10 @@ export interface FoodBulkItem {
 }
 export interface BulkError { index: number; error: string; item?: unknown }
 export interface BulkResponse { created: number; updated: number; errors: BulkError[] }
+// Drinks: misma forma que foods (DrinkSerializer coincide con FoodSerializer)
+export type CreateDrinkRequest = CreateFoodRequest;
+export type UpdateDrinkRequest = CreateFoodRequest;
+export type DrinkBulkItem = FoodBulkItem;
 export interface PlaceOrderResponse { orderId: number }
 
 export const useApi: () => {
@@ -96,6 +100,11 @@ export const useApi: () => {
   updateFood: (id: number, data: UpdateFoodRequest) => Promise<Item>;
   deleteFood: (id: number) => Promise<void>;
   bulkFoods: (items: FoodBulkItem[]) => Promise<BulkResponse>;
+  // drinks (manager)
+  createDrink: (data: CreateDrinkRequest) => Promise<Item>;
+  updateDrink: (id: number, data: UpdateDrinkRequest) => Promise<Item>;
+  deleteDrink: (id: number) => Promise<void>;
+  bulkDrinks: (items: DrinkBulkItem[]) => Promise<BulkResponse>;
   // orders
   placeOrder: (
     order: OrderToPlace,
@@ -135,6 +144,10 @@ Endpoint mapping (all relative, no origin, no axios instance):
 | `updateFood` | PUT | `/api/foods/{id}/` | `UpdateFoodRequest` | raw `response.data` |
 | `deleteFood` | DELETE | `/api/foods/{id}/` | — | `undefined` (204) |
 | `bulkFoods` | POST | `/api/foods/bulk/` | `{ items: FoodBulkItem[] }` | raw `response.data` (`BulkResponse`) |
+| `createDrink` | POST | `/api/drinks/` | `CreateDrinkRequest` | raw `response.data` |
+| `updateDrink` | PUT | `/api/drinks/{id}/` | `UpdateDrinkRequest` | raw `response.data` |
+| `deleteDrink` | DELETE | `/api/drinks/{id}/` | — | `undefined` (204) |
+| `bulkDrinks` | POST | `/api/drinks/bulk/` | `{ items: DrinkBulkItem[] }` | raw `response.data` (`BulkResponse`) |
 | `placeOrder` | POST | `/api/place_order/` | `OrderToPlace` | raw `response.data` (`{ orderId }`) |
 | `updateOrder` | PUT | `/api/orders/{orderId}/` | `OrderToPlace` | raw `response.data` (serialized `Order`, not paginated) |
 | `updateOrderStatus` | POST | `/api/orders/{orderId}/update_status` | `{ status, are_food_ready?, are_drinks_ready? }` | raw `response.data` |
@@ -187,7 +200,8 @@ export function useColorScheme(): 'light';            // web (always)
    missing/`undefined` result as a failure (typically `?? []` at the call site).
 4. **Write errors are split by method.** Every write method (`login`, `createStaff`,
    `bulkStaff`, `createStock`, `updateStock`, `createFood`, `updateFood`, `deleteFood`,
-   `bulkFoods`, `placeOrder`, `updateOrder`) logs, then throws
+   `bulkFoods`, `createDrink`, `updateDrink`, `deleteDrink`, `bulkDrinks`, `placeOrder`,
+   `updateOrder`) logs, then throws
    `Error(error.response.data.error)` when the server sent a JSON `error` field, else rethrows
    the original error. `updateOrderStatus` and `updateWaiter` swallow all errors (resolve to
    `undefined`); callers cannot observe failure except through `console.error`.
@@ -222,7 +236,8 @@ export function useColorScheme(): 'light';            // web (always)
 - Performs HTTP requests via `axios` on relative `/api/` paths when hook methods are invoked.
 - Emits `console.error` on every caught request failure (all methods).
 - Throws on failure for every write method (`login`, `createStaff`, `bulkStaff`, `createStock`,
-  `updateStock`, `createFood`, `updateFood`, `deleteFood`, `bulkFoods`, `placeOrder`,
+  `updateStock`, `createFood`, `updateFood`, `deleteFood`, `bulkFoods`, `createDrink`,
+  `updateDrink`, `deleteDrink`, `bulkDrinks`, `placeOrder`,
   `updateOrder`), preferring the server's JSON `error` field when present.
   `updateOrderStatus` and `updateWaiter` swallow all errors (resolve to `undefined`);
   GETs (`getAny`) also swallow errors (resolve to `undefined`).

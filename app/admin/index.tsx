@@ -7,7 +7,7 @@ import { AuthContext } from "@/app/_layout";
 const ADMIN_SECTIONS = [
   { key: "staff", label: "Usuarios (staff) y roles", route: "/admin/staff" },
   { key: "foods", label: "Comidas", route: "/admin/foods" },
-  { key: "drinks", label: "Bebidas (próximamente)", route: null },
+  { key: "drinks", label: "Bebidas", route: "/admin/drinks" },
   { key: "tables", label: "Mesas (próximamente)", route: null },
   { key: "waiters", label: "Mozos y rangos de mesa (próximamente)", route: null },
   { key: "stock", label: "Stock inicial (próximamente)", route: null },

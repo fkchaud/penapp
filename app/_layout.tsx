@@ -264,6 +264,10 @@ const MyDrawer = () => {
         options={{ drawerItemStyle: { display: "none" }, title: "Carga de comidas" }}
       />
       <Drawer.Screen
+        name={"admin/drinks"}
+        options={{ drawerItemStyle: { display: "none" }, title: "Carga de bebidas" }}
+      />
+      <Drawer.Screen
         name={"logout"}
         options={{ drawerLabel: "Cerrar sesión", title: "Salir" }}
       />
