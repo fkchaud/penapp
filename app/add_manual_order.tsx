@@ -5,7 +5,7 @@ import {
   UserTypeContext,
   UserTypeContextType,
 } from "@/app/_layout";
-import { useIsFocused } from "@react-navigation/core";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useApi } from "@/hooks/useApi";
 import {
   Item,

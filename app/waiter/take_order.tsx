@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
-import { useIsFocused } from "@react-navigation/core";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import "@/css/global.css";

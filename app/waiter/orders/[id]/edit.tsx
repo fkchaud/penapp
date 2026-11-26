@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useIsFocused } from "@react-navigation/core";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useApi } from "@/hooks/useApi";
 import { useContext, useEffect, useRef, useState } from "react";
 import {

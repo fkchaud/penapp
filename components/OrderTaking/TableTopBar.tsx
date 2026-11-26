@@ -1,7 +1,7 @@
 import { Table } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { WaiterContext, WaiterContextType } from "@/app/_layout";
-import { useIsFocused } from "@react-navigation/core";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useApi } from "@/hooks/useApi";
 import {
   FlatList,

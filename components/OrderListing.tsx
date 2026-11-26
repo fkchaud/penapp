@@ -11,7 +11,7 @@ import OrderMasonry from "@/components/OrderMasonry";
 import { Order, OrderStatus } from "@/types";
 import React, { useEffect, useState } from "react";
 import { GetOrdersParams, useApi } from "@/hooks/useApi";
-import { useIsFocused } from "@react-navigation/core";
+import { useIsFocused } from "expo-router/react-navigation";
 import { OrderCard } from "@/components/OrderCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
