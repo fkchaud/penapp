@@ -202,3 +202,7 @@ dist
 expo-env.d.ts
 # @end expo-cli
 .expo/
+
+# ignorar directorios nativos porque sólo estamos exportando web
+/android
+/ios
