@@ -98,8 +98,8 @@ export interface CreateFoodRequest {
   price: number;
   icon?: string;
   units_per_pack?: number;
-  /** Escritura: pk o objeto con id (el backend acepta ambos). */
-  stock?: number | StockRef | null;
+  stock?: StockRef | null;  // read
+  stock_id?: number;  // write
 }
 
 export type UpdateFoodRequest = CreateFoodRequest;

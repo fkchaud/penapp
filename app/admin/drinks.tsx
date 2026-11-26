@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react";
-import { Modal, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { Button, HelperText, TextInput } from "react-native-paper";
-import { useRouter } from "expo-router";
-import { AuthContext } from "@/app/_layout";
-import { StockItem, useApi } from "@/hooks/useApi";
+import React, {useContext, useState} from "react";
+import {Modal, SafeAreaView, ScrollView, Text, useWindowDimensions, View} from "react-native";
+import {Button, HelperText, TextInput} from "react-native-paper";
+import {useRouter} from "expo-router";
+import {AuthContext} from "@/app/_layout";
+import {StockItem, useApi} from "@/hooks/useApi";
 
-import { Item } from "@/types";
+import {Item} from "@/types";
 
 type Mode = "list" | "form";
 
@@ -118,10 +118,7 @@ export default function AdminDrinks() {
         units_per_pack: parseInt(units || "1", 10) || 1,
       };
       if (stock.trim()) {
-        const sid = await ensureStock(stock.trim(), parseInt(initial || "0", 10) || 0);
-        body.stock = sid;
-      } else {
-        body.stock = null;
+        body.stock_id = await ensureStock(stock.trim(), parseInt(initial || "0", 10) || 0);
       }
       if (editingId) {
         await api.updateDrink(editingId, body);
