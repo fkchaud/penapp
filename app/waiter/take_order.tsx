@@ -1,7 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { PaperProvider } from "react-native-paper";
-import { useIsFocused } from "expo-router/react-navigation";
+import { useIsFocused } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import "@/css/global.css";
@@ -66,7 +67,7 @@ const InternalTakeOrder = ({ reset }: { reset: () => void }) => {
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
-  const commentInputRef = useRef<TextInput>(null);
+  const commentInputRef = useRef<TextInputInstance>(null);
 
   const { idemKey, regenerateKey } = useIdemKey();
 

@@ -5,7 +5,7 @@ import {
   UserTypeContext,
   UserTypeContextType,
 } from "@/app/_layout";
-import { useIsFocused } from "expo-router/react-navigation";
+import { useIsFocused } from "expo-router";
 import { useApi } from "@/hooks/useApi";
 import {
   Item,
@@ -16,7 +16,8 @@ import {
   Table,
   UserType,
 } from "@/types";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { Theme } from "@/constants/Colors";
 import { ConfirmOrderModal } from "@/components/OrderTaking/ConfirmOrderModal";
@@ -38,7 +39,7 @@ const InternalAddManualOrder = ({ reset }: { reset: () => void }) => {
   const [currentTable, setCurrentTable] = useState<Table | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [comment, setComment] = useState("");
-  const commentInputRef = useRef<TextInput>(null);
+  const commentInputRef = useRef<TextInputInstance>(null);
 
   const { idemKey, regenerateKey } = useIdemKey();
 

@@ -1,10 +1,11 @@
-import { LegacyRef } from "react";
+import { type Ref } from "react";
 import { Text, TextInput, View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { BottomBar } from "@/components/BottomBar";
 import { Button, Divider } from "react-native-paper";
 
 type ConfirmBottomBarProps = {
-  commentInputRef?: LegacyRef<TextInput>;
+  commentInputRef?: Ref<TextInputInstance>;
   comment: string;
   setComment: (comment: string) => void;
   totalPrice: number;

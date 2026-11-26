@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useIsFocused } from "expo-router/react-navigation";
+import { useIsFocused } from "expo-router";
 import { useApi } from "@/hooks/useApi";
 import { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -13,7 +13,8 @@ import {
 } from "@/types";
 import { ActivityIndicator, Button, PaperProvider } from "react-native-paper";
 import { Theme } from "@/constants/Colors";
-import { Modal, Text, TextInput, View } from "react-native";
+import { Modal, Text, View } from "react-native";
+import type { TextInputInstance } from "react-native";
 import { FoodPicker } from "@/components/OrderTaking/FoodPicker";
 import { TableTopBar } from "@/components/OrderTaking/TableTopBar";
 import {
@@ -40,7 +41,7 @@ const InternalEditOrder = () => {
   const { getDrinks, getFoods, getOrder, updateOrder, updateOrderStatus } =
     useApi();
 
-  const commentInputRef = useRef<TextInput>(null);
+  const commentInputRef = useRef<TextInputInstance>(null);
   const [confirmModalVisible, setConfirmModalVisible] =
     useState<boolean>(false);
   const [cancelModalVisible, setCancelModalVisible] = useState<boolean>(false);
