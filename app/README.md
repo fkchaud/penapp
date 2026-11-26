@@ -107,7 +107,7 @@ Hidden entries are rendered with `drawerItemStyle.display = "none"`; the route s
 ## Side Effects
 
 - Storage: `AsyncStorage.setItem("userType", userType)` on mount and every role change; `AsyncStorage.setItem("waiter_obj", JSON.stringify(waiter))` whenever a waiter is set.
-- HTTP: role-dependent — waiters/tables and `PATCH /api/waiters/<name>/` from home; item catalogs and order mutations from the order-entry routes; order lists polled every 10 s by `OrderListing`; status updates from cashier/chef/waiter boards.
+- HTTP: role-dependent — waiters/tables and `PATCH /api/waiters/<name>/` from home; item catalogs and order mutations from the order-entry routes; order lists polled every 10 s by `OrderListing` only while the screen is focused; status updates from cashier/chef/waiter boards.
 - Cache: `["foods"]`/`["drinks"]` invalidation from order-entry screens; `["orders"]` invalidation from list screens.
 - Navigation: `router.navigate` targets listed above; `router.replace("/")` is the waiter guard in `take_order`; edit navigates to `/waiter/orders` from Snackbar dismissal.
 - UI feedback: Snackbar messages (`"Comanda enviada: #id"`, `"Comanda agregada: #id"`, `"Comanda enviada"`, `"Comanda anulada"`, `"Error: …"`); errors are also logged to the console.

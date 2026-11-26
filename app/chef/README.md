@@ -27,7 +27,7 @@ Parent: [app](../README.md)
 ### `OrderListing` contract used here
 
 - Query key: `["orders", getOrderParams]`; `getOrderParams` is omitted, so all orders are fetched.
-- `GET /api/orders/`; `ActivityIndicator` until data resolves; `refetchInterval: 10000`; `refetchOnMount`/`refetchOnWindowFocus: "always"`; invalidates `["orders"]` on focus.
+- `GET /api/orders/`; `ActivityIndicator` until data resolves; `refetchInterval: 10000` while focused (gated by `useIsFocused()`; no polling on blur); `refetchOnMount`/`refetchOnWindowFocus: "always"`; invalidates `["orders"]` on focus.
 
 ### API calls
 
@@ -51,7 +51,7 @@ Parent: [app](../README.md)
 
 ## Side Effects
 
-- HTTP: `GET /api/orders/` (10 s polling while mounted); `POST /api/orders/<id>/update_status` on each readiness/pickup action.
+- HTTP: `GET /api/orders/` (10 s polling while focused; none on blur); `POST /api/orders/<id>/update_status` on each readiness/pickup action.
 - Cache: `["orders"]` invalidation via `OrderListing` (focus and actions).
 - Storage: none.
 - Navigation: `router.navigate("/add_manual_order")`.

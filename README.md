@@ -33,7 +33,7 @@ roles: mozo, caja, cocina. Consume la API de `../penapi` vía rutas relativas
   página (`getAny` sigue `response.data.results`).
 - `useApi.getOrders` arma el query string sin `&` entre `waiter` y `status`
   (bug latente).
-- Stock se refresca por polling cada 10 s en `OrderListing`; no hay push.
+- Stock se refresca por polling cada 10 s en `OrderListing`, sólo mientras la pantalla está enfocada (el drawer mantiene las pantallas montadas); no hay push.
 - El rol del usuario viene del token (backend), no del body; la UI usa
   `UserType` solo para mostrar/ocultar pantallas.
 

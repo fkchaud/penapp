@@ -34,7 +34,7 @@ Parent: [waiter](../README.md)
 
 - Query key: `["orders", getOrderParams]` → `GET /api/orders/` with query params derived from `GetOrdersParams`.
 - `orderActionsBuilder(order, onActionClose, onActionRefresh) => React.ReactNode`.
-- `ActivityIndicator` while `orders` is undefined; `refetchInterval: 10000`; `refetchOnMount: "always"`; `refetchOnWindowFocus: "always"`; invalidates `["orders"]` on focus.
+- `ActivityIndicator` while `orders` is undefined; `refetchInterval: 10000` while focused (gated by `useIsFocused()`; no polling on blur); `refetchOnMount: "always"`; `refetchOnWindowFocus: "always"`; invalidates `["orders"]` on focus.
 
 ### API calls
 
@@ -54,7 +54,7 @@ Parent: [waiter](../README.md)
 
 ## Side Effects
 
-- HTTP: `GET /api/orders/` (polled every 10 s while mounted/focused); `POST /api/orders/<id>/update_status` on action press.
+- HTTP: `GET /api/orders/` (polled every 10 s while focused; none on blur); `POST /api/orders/<id>/update_status` on action press.
 - Cache: `["orders"]` invalidation happens inside `OrderListing` (on focus and after actions).
 - Storage: none.
 - Navigation: `router.navigate("/waiter/take_order")` from the "Tomar pedido" header button; `router.navigate("/waiter/orders/[id]/edit", { id })` from "Editar".

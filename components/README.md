@@ -121,8 +121,10 @@ Remaining props are spread onto the root `View`.
   appears in neither array is rendered nowhere, and one in both appears twice.
 - **`OrderListing` owns the polling query.** `useQuery` key
   `["orders", getOrderParams]`, `queryFn: getOrders(getOrderParams)`,
-  `refetchInterval: 10000`, `refetchOnMount: "always"`,
-  `refetchOnWindowFocus: "always"`. There is no pagination or result cap.
+  `refetchInterval: isFocused ? 10000 : false`, `refetchOnMount: "always"`,
+  `refetchOnWindowFocus: "always"`. The interval is gated on `useIsFocused()`
+  because the drawer keeps visited screens mounted: without the guard the poll
+  would keep running after navigating away. There is no pagination or result cap.
 - **The past-orders section is conditional and collapsed by default.**
   `hideInactive` starts `true`; the section renders only when
   `inactiveOrders().length > 0`, and while hidden the grid carries `hidden`.
@@ -152,7 +154,8 @@ Remaining props are spread onto the root `View`.
 
 - `OrderListing`: HTTP `GET /api/orders/` through `useApi().getOrders`, with
   optional `waiter` and `status` query parameters (arrays joined by `,`),
-  executed by React Query on mount, every 10s, and on window focus.
+  executed by React Query on mount, every 10s while the screen is focused
+  (`refetchInterval: false` on blur), and on window focus.
 - `OrderListing`: `queryClient.invalidateQueries({ queryKey: ["orders"] })` on
   screen focus, on the `Actualizar` button, on pull-to-refresh from either grid,
   on `onActionClose`, and on `onActionRefresh`.

@@ -42,7 +42,7 @@ export const OrderListing = ({
   const { data: orders } = useQuery({
     queryKey: ["orders", getOrderParams],
     queryFn: async () => getOrders(getOrderParams),
-    refetchInterval: 10000,
+    refetchInterval: isFocused ? 10000 : false,
     refetchOnMount: "always",
     refetchOnWindowFocus: "always",
   });
