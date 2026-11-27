@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Drawer } from "expo-router/drawer";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { PaperProvider, Portal, Snackbar } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { Drawer } from "expo-router/drawer";
+import {AsyncStorage} from "expo-sqlite/kv-store";
+
 import axios from "axios";
+import { PaperProvider, Portal, Snackbar } from "react-native-paper";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { Theme } from "@/constants/Colors";
 import { UserType, WaiterTables } from "@/types";
 import { useApi } from "@/hooks/useApi";
