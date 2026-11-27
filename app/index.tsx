@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, TextInput } from "react-native-paper";
-import React, { useContext, useEffect, useState } from "react";
+import React, {StrictMode, useContext, useEffect, useState} from "react";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/app/_layout";
 import { useApi } from "@/hooks/useApi";
@@ -75,51 +75,53 @@ const Index = () => {
   if (auth?.user) return null;
 
   return (
-    <SafeAreaView>
-      <ScrollView>
-        <View style={{ padding: 16 }}>
-          <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}>
-            PeñApp — Iniciar sesión
-          </Text>
-          <Text style={{ marginBottom: 8 }}>Seleccioná tu nombre:</Text>
-          <View style={{ marginBottom: 12 }}>
-            {staff.map((s) => (
-              <Button
-                key={s.name}
-                mode={selected === s.name ? "contained" : "outlined"}
-                onPress={() => setSelected(s.name)}
-                style={{ marginBottom: 4 }}
-              >
-                {s.name} ({s.role})
-              </Button>
-            ))}
+    <StrictMode>
+      <SafeAreaView>
+        <ScrollView>
+          <View style={{ padding: 16 }}>
+            <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}>
+              PeñApp — Iniciar sesión
+            </Text>
+            <Text style={{ marginBottom: 8 }}>Seleccioná tu nombre:</Text>
+            <View style={{ marginBottom: 12 }}>
+              {staff.map((s) => (
+                <Button
+                  key={s.name}
+                  mode={selected === s.name ? "contained" : "outlined"}
+                  onPress={() => setSelected(s.name)}
+                  style={{ marginBottom: 4 }}
+                >
+                  {s.name} ({s.role})
+                </Button>
+              ))}
+            </View>
+            <TextInput
+              mode="outlined"
+              label="PIN"
+              value={pin}
+              onChangeText={setPin}
+              secureTextEntry
+              keyboardType="numeric"
+              maxLength={8}
+              style={{ marginBottom: 12 }}
+            />
+            {error ? (
+              <HelperText type="error" visible>
+                {error}
+              </HelperText>
+            ) : null}
+            <Button
+              mode="contained"
+              onPress={handleLogin}
+              loading={loading}
+              disabled={loading}
+            >
+              Entrar
+            </Button>
           </View>
-          <TextInput
-            mode="outlined"
-            label="PIN"
-            value={pin}
-            onChangeText={setPin}
-            secureTextEntry
-            keyboardType="numeric"
-            maxLength={8}
-            style={{ marginBottom: 12 }}
-          />
-          {error ? (
-            <HelperText type="error" visible>
-              {error}
-            </HelperText>
-          ) : null}
-          <Button
-            mode="contained"
-            onPress={handleLogin}
-            loading={loading}
-            disabled={loading}
-          >
-            Entrar
-          </Button>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </StrictMode>
   );
 };
 
